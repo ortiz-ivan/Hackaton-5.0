@@ -1,0 +1,4 @@
+pygame==2.5.2          # Motor principal del juego 2D
+numpy==1.26.0          # Para cálculos de vectores, colisiones, distancias
+pillow==10.1.0         # Para manipular imágenes si usamos sprites o iconos
+pytest==8.3.0          # Para tests rápidos de lógica de sistemas
