@@ -1,7 +1,7 @@
 import pygame
 import sys
 
-
+#Clase madre y configuracion general para los tres menus (INICIAL, PAUSA Y GAME OVER)
 class Menu:
     def __init__(self, screen, titulo, opciones):
         self.screen = screen
@@ -9,8 +9,8 @@ class Menu:
         self.opciones = opciones
         self.selected_index = 0
 
-        self.font = pygame.font.Font(None, 48)
-        self.title_font = pygame.font.Font(None, 72)
+        self.font = pygame.font.Font("ui/fonts/early_gameboy.ttf", 48)
+        self.title_font = pygame.font.Font("ui/fonts/early_gameboy.ttf", 50)
 
         self.color_normal = (200, 200, 200)
         self.color_selected = (255, 220, 100)
@@ -59,14 +59,16 @@ class Menu:
 
                 elif event.key == pygame.K_RETURN:
                     return self.opciones[self.selected_index]
-                          
+
+#CREACION Y EJECUCION DEL MENU DE INICIO                       
 class MenuInicial(Menu):
     def __init__(self, screen):
-        super().__init__(
-            screen,
-            "Penguin Chaos",
-            ["Jugar", "Salir"]
-        )
+         super().__init__(
+             screen,
+             "Penguin Chaos",
+             ["Jugar", "Salir"]
+         )
+
 
 def main():
     pygame.init()
@@ -75,6 +77,41 @@ def main():
     pygame.display.set_caption("Penguin Chaos")
 
     menu = MenuInicial(screen)
+
+    running = True
+    while running:
+         events = pygame.event.get()
+         for event in events:
+             if event.type == pygame.QUIT:
+                 running = False
+
+         menu.update(events)
+         menu.render()
+
+         pygame.display.flip()
+
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
+
+
+#CREACION Y EJECUCION DEL MENU GAME OVER (al terminar el juego)
+class Menu_GameOver(Menu):
+    def __init__(self, screen):
+        super().__init__(
+            screen,
+            "Game Over",
+            ["Volver a jugar", "Salir"]
+        )        
+
+def main():
+    pygame.init()
+
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("Game Over")
+
+    menu = Menu_GameOver(screen)
 
     running = True
     while running:
@@ -93,3 +130,37 @@ def main():
 if __name__ == "__main__":
     main()
 
+
+#CREACION Y EJECUCION DEL MENU PAUSA 
+class Menu_Pausa(Menu):
+    def __init__(self, screen):
+        super().__init__(
+            screen,
+            "Juego en Pausa",
+            ["Reanudar partida", "Salir"]
+        )        
+
+def main():
+    pygame.init()
+
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("Juego en Pausa")
+
+    menu = Menu_Pausa(screen)
+
+    running = True
+    while running:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                running = False
+
+        menu.update(events)
+        menu.render()
+
+        pygame.display.flip()
+
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
