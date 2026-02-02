@@ -1,10 +1,10 @@
 import pygame
 import os
+
 from systems.spawn_system import SpawnSystem
-# ### NUEVO: Importamos tus herramientas y el sistema de movimiento
 from utils.helpers import load_obstacle_data
 from entities.obstacle import Obstacle
-from systems.movement_system import MovementSystem
+
 
 class Game:
     def __init__(self, screen):
@@ -14,7 +14,6 @@ class Game:
         self.background = pygame.image.load(
             os.path.join("assets", "images", "aula.png")
         ).convert()
-
         self.background = pygame.transform.scale(
             self.background, self.screen.get_size()
         )
@@ -22,49 +21,40 @@ class Game:
         # Estudiantes
         self.students = []
 
-        # ### NUEVO: Inicializar Obstáculos
+        # Obstáculos estáticos
         self.obstacle_configs = load_obstacle_data()
         self.obstacles = pygame.sprite.Group()
-        self._setup_obstacles() # Método para sembrar el aula
+        self._setup_obstacles()
 
-        # Sistema de spawn (Alumnos)
+        # Sistema de spawn de alumnos
         self.spawn_system = SpawnSystem()
         self.spawn_system.spawn_initial(self.students)
-        
-        # ### NUEVO: Sistema de Movimiento (Asumiendo que self.player existe)
-        # Si aún no tienes el objeto player creado, esta línea dará error.
-        # self.movement_system = MovementSystem(self.player, self.obstacles)
 
     def _setup_obstacles(self):
-        """Método para crear las sillas y mochilas iniciales."""
+        """Crea las sillas y mochilas iniciales del aula."""
         if "mochila_basica" in self.obstacle_configs:
-            m1 = Obstacle(200, 150, self.obstacle_configs["mochila_basica"])
+            config = self.obstacle_configs["mochila_basica"]
+            m1 = Obstacle(200, 150, config["width"], config["height"])
             self.obstacles.add(m1)
-        
+
         if "silla_escolar" in self.obstacle_configs:
-            s1 = Obstacle(400, 300, self.obstacle_configs["silla_escolar"])
+            config = self.obstacle_configs["silla_escolar"]
+            s1 = Obstacle(400, 300, config["width"], config["height"])
             self.obstacles.add(s1)
 
     def update(self, dt):
-        # Actualizar alumnos
         for student in self.students:
             student.update(dt)
-        
-        # ### NUEVO: Actualizar obstáculos (por si las sillas se mueven)
-        self.obstacles.update(dt)
-        
-        # ### NUEVO: Actualizar movimiento del profesor
-        # self.movement_system.update(dt)
 
     def render(self):
-        # 1️⃣ Dibujar aula
+        # Dibujar fondo
         self.screen.blit(self.background, (0, 0))
 
-        # 2️⃣ Dibujar alumnos
+        # Dibujar alumnos
         for student in self.students:
             student.render(self.screen)
-            
-        # ### NUEVO: 3️⃣ Dibujar obstáculos
+
+        # Dibujar obstáculos
         self.obstacles.draw(self.screen)
 
         pygame.display.flip()
