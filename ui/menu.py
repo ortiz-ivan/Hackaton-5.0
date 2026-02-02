@@ -1,53 +1,95 @@
 import pygame
 import sys
 
-#Clase general para el boton
-class Boton_configuracion:
-    def __init__(self, text, center_pos):
-        self.text = text
-        self.rect = pygame.Rect(0, 0, 300, 60)
-        self.rect.center = center_pos
 
-#Clase madre para los menu (habran tres, Menu inicial, menu pausa y menu game over)
 class Menu:
-    def __init__ (self, titulo, opcion1, opcion2):
-        self.titulo=titulo
-        self.opcion1=opcion1
-        self.opcion2=opcion2
+    def __init__(self, screen, titulo, opciones):
+        self.screen = screen
+        self.titulo = titulo
+        self.opciones = opciones
+        self.selected_index = 0
 
         self.font = pygame.font.Font(None, 48)
+        self.title_font = pygame.font.Font(None, 72)
+
         self.color_normal = (200, 200, 200)
         self.color_selected = (255, 220, 100)
         self.bg_color = (30, 30, 40)
-#Clases hijas
-#1 Menu principal
-class Menu_inicial(Menu):
-    def opciones (self):
-        print (self.titulo)
-        print (self.opcion1)
-        print(self.opcion2)
 
+        self.buttons = []
+        self._create_buttons()
 
-menu_principal= Menu_inicial('Penguin chaos', 'Jugar', 'Salir')
-menu_principal.opciones()
+    def _create_buttons(self):
+        center_x = self.screen.get_width() // 2
+        start_y = self.screen.get_height() // 2
 
-#2 Menu PAUSA
-class Menu_pausa (Menu):
-    def opciones_pausa (self):
-        print (self.titulo)
-        print (self.opcion1)
-        print(self.opcion2)
+        for i, texto in enumerate(self.opciones):
+            rect = pygame.Rect(0, 0, 300, 60)
+            rect.center = (center_x, start_y + i * 80)
+            self.buttons.append((texto, rect))
 
-menu_pausa= Menu_pausa ('En pausa', 'Continuar partida', 'Salir')
-menu_pausa.opciones_pausa()
+    def render(self):
+        self.screen.fill(self.bg_color)
+        self._draw_title()
+        self._draw_buttons()
 
+    def _draw_title(self):
+        title_surf = self.title_font.render(self.titulo, True, (255, 255, 255))
+        title_rect = title_surf.get_rect(center=(self.screen.get_width() // 2, 120))
+        self.screen.blit(title_surf, title_rect)
+    
+    def _draw_buttons(self):
+        for i, (texto, rect) in enumerate(self.buttons):
+            color = self.color_selected if i == self.selected_index else self.color_normal
 
-#3 Menu GAME OVER
-class Game_over (Menu):
-    def mensaje_gameover (self):
-        print (self.titulo)
-        print (self.opcion1)
-        print(self.opcion2)
+            pygame.draw.rect(self.screen, color, rect, border_radius=8)
 
-menu_gameover= Game_over ('Game over', 'Felicidades, ganaste!', 'Gracias por jugar')
-menu_gameover.mensaje_gameover()
+            text_surf = self.font.render(texto, True, (0, 0, 0))
+            text_rect = text_surf.get_rect(center=rect.center)
+            self.screen.blit(text_surf, text_rect)
+
+    def update(self, events):
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_DOWN:
+                    self.selected_index = (self.selected_index + 1) % len(self.buttons)
+
+                elif event.key == pygame.K_UP:
+                    self.selected_index = (self.selected_index - 1) % len(self.buttons)
+
+                elif event.key == pygame.K_RETURN:
+                    return self.opciones[self.selected_index]
+                          
+class MenuInicial(Menu):
+    def __init__(self, screen):
+        super().__init__(
+            screen,
+            "Penguin Chaos",
+            ["Jugar", "Salir"]
+        )
+
+def main():
+    pygame.init()
+
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("Penguin Chaos")
+
+    menu = MenuInicial(screen)
+
+    running = True
+    while running:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                running = False
+
+        menu.update(events)
+        menu.render()
+
+        pygame.display.flip()
+
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
+
