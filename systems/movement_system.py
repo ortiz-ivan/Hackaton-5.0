@@ -33,7 +33,7 @@ class MovementSystem:
                 self.player.position.y = new_pos_y
 
     def _check_collision(self, rect):
-        """Valida si el rectángulo choca con algún obstáculo o límites."""
+        #Valida si el rectángulo choca con algún obstáculo o límites.
         # Colisión con obstáculos (Sillas, mochilas, etc.) 
         for obstacle in self.obstacles:
             if rect.colliderect(obstacle.rect):

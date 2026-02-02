@@ -33,10 +33,10 @@ class Game:
         
         # ### NUEVO: Sistema de Movimiento (Asumiendo que self.player existe)
         # Si aún no tienes el objeto player creado, esta línea dará error.
-        # self.movement_system = MovementSystem(self.player, self.obstacles)
+        self.movement_system = MovementSystem(self.player, self.obstacles)
 
     def _setup_obstacles(self):
-        """Método para crear las sillas y mochilas iniciales."""
+        #Método para crear las sillas y mochilas iniciales.
         if "mochila_basica" in self.obstacle_configs:
             m1 = Obstacle(200, 150, self.obstacle_configs["mochila_basica"])
             self.obstacles.add(m1)
@@ -54,7 +54,7 @@ class Game:
         self.obstacles.update(dt)
         
         # ### NUEVO: Actualizar movimiento del profesor
-        # self.movement_system.update(dt)
+        self.movement_system.update(dt)
 
     def render(self):
         # 1️⃣ Dibujar aula
