@@ -33,6 +33,17 @@ class Game:
         # --- Estudiantes ---
         self.students = []
 
+        # --- Obstáculos estáticos ---
+        self.obstacles = pygame.sprite.Group()
+        self._setup_obstacles()
+
+        # --- Sistema de movimiento del jugador ---
+        self.input_system = InputSystem(self.player)
+        self.movement_system = MovementSystem(self.player, self.obstacles)
+
+        # --- Estudiantes ---
+        self.students = []
+
         # --- Sistema de spawn de estudiantes ---
         self.spawn_system = SpawnSystem()
         self.spawn_system.spawn_initial(self.students)
