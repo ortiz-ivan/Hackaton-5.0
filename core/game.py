@@ -1,4 +1,6 @@
 import pygame
+import os
+from config import SCREEN_WIDTH, SCREEN_HEIGHT
 
 from core.state_manager import StateManager
 from core.clock import GameClock
@@ -22,10 +24,14 @@ class Game:
         self.obstacles = []
 
         self.input_system = InputSystem(self.player)
-        self.movement_system = MovementSystem(self.player, self.obstacles)
+        self.movement_system = MovementSystem(self.player, self.obstacles, self.input_system)
         self.interaction_system = InteractionSystem(self.player)
         self.spawn_system = SpawnSystem()
         self.chaos_system = ChaosSystem()
+
+        # Load background image
+        self.background = pygame.image.load(os.path.join('assets', 'images', 'aula.png')).convert()
+        self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
     def update(self, dt: float) -> bool:
         self.clock.update(dt)
@@ -41,7 +47,7 @@ class Game:
         return True
 
     def render(self):
-        self.screen.fill((200, 200, 200))
+        self.screen.blit(self.background, (0, 0))
 
         self.player.render(self.screen)
 
