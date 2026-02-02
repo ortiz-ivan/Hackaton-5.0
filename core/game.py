@@ -1,10 +1,9 @@
 import pygame
 import os
+
 from systems.spawn_system import SpawnSystem
-from entities.player import Player
+from utils.helpers import load_obstacle_data
 from entities.obstacle import Obstacle
-from systems.input_system import InputSystem
-from systems.movement_system import MovementSystem
 
 
 class Game:
@@ -33,21 +32,26 @@ class Game:
         # --- Estudiantes ---
         self.students = []
 
-        # --- Sistema de spawn de estudiantes ---
+        # Obstáculos estáticos
+        self.obstacle_configs = load_obstacle_data()
+        self.obstacles = pygame.sprite.Group()
+        self._setup_obstacles()
+
+        # Sistema de spawn de alumnos
         self.spawn_system = SpawnSystem()
         self.spawn_system.spawn_initial(self.students)
 
     def _setup_obstacles(self):
-        """Sembrar obstáculos estáticos en el aula"""
-        # Definimos obstáculos directamente (width, height)
-        mochila_width, mochila_height = 40, 40
-        silla_width, silla_height = 50, 50
+        """Crea las sillas y mochilas iniciales del aula."""
+        if "mochila_basica" in self.obstacle_configs:
+            config = self.obstacle_configs["mochila_basica"]
+            m1 = Obstacle(200, 150, config["width"], config["height"])
+            self.obstacles.add(m1)
 
-        # Crear mochilas y sillas
-        m1 = Obstacle(200, 150, mochila_width, mochila_height)
-        s1 = Obstacle(400, 300, silla_width, silla_height)
-
-        self.obstacles.add(m1, s1)
+        if "silla_escolar" in self.obstacle_configs:
+            config = self.obstacle_configs["silla_escolar"]
+            s1 = Obstacle(400, 300, config["width"], config["height"])
+            self.obstacles.add(s1)
 
     def update(self, dt):
         # --- Input y movimiento del jugador ---
@@ -62,17 +66,14 @@ class Game:
         self.obstacles.update()
 
     def render(self):
-        # --- Dibujar fondo ---
+        # Dibujar fondo
         self.screen.blit(self.background, (0, 0))
 
-        # --- Dibujar estudiantes ---
+        # Dibujar alumnos
         for student in self.students:
             student.render(self.screen)
 
-        # --- Dibujar obstáculos ---
+        # Dibujar obstáculos
         self.obstacles.draw(self.screen)
-
-        # --- Dibujar jugador ---
-        self.player.render(self.screen)
 
         pygame.display.flip()
