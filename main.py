@@ -13,9 +13,20 @@ def main():
 
     running = True
     while running:
-        dt = clock.tick(FPS) / 1000
-        running = game.update(dt)
-        game.render()
+        dt = clock.tick(FPS) / 1000  # delta time en segundos
+
+        # --- Procesar eventos ---
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        # --- Actualización ---
+        game.update(
+            dt
+        )  # aquí se actualizan todos los sistemas: input, movimiento, spawn, interacción, caos
+
+        # --- Render ---
+        game.render()  # dibuja fondo, player, estudiantes, obstáculos, HUD
 
     pygame.quit()
 
