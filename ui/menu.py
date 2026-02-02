@@ -30,7 +30,10 @@ class Menu:
         #Para agregar un fondo 
         self.bg_image = pygame.image.load("ui/image/clouds_2.png").convert()
         self.bg_image = pygame.transform.scale(self.bg_image, (self.screen.get_width(), self.screen.get_height()))
-
+        
+        #Parametros de animacion para el fondo
+        self.bg_x = 0
+        self.bg_speed = 0.3
 
     def _create_buttons(self):
         center_x = self.screen.get_width() // 2
@@ -42,12 +45,21 @@ class Menu:
             self.buttons.append((texto, rect))
 
     def render(self):
+
         #self.screen.fill(self.bg_color) para ponerle un color al fondo
 
         #Para agregar una imagen de fondo
         self.screen.blit(self.bg_image, (0, 0)) 
+
+        self.bg_x -= self.bg_speed
+        if self.bg_x <= -self.screen.get_width():
+            self.bg_x = 0
+        self.screen.blit(self.bg_image, (self.bg_x, 0))
+        self.screen.blit(self.bg_image, (self.bg_x + self.screen.get_width(), 0))
+
         self._draw_title()
         self._draw_buttons()
+
 
     def _draw_title(self):
         title_surf = self.title_font.render(self.titulo, True, (255, 255, 255))
@@ -193,3 +205,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+pygame.quit()
+sys.exit()
