@@ -1,35 +1,20 @@
-import random
 from entities.student import Student
-from config import SCREEN_WIDTH, SCREEN_HEIGHT
-
 
 class SpawnSystem:
     def __init__(self):
-        self.timer = 0.0
-
-        # Posiciones posibles (sillas del aula)
+        self.spawned = False
+        self.initial_position = (400, 50)
         self.spawn_positions = [
-            (200, 400),
-            (300, 400),
-            (400, 400),
-            (500, 400),
-            (600, 400),
+            (400, 300),
+            (550, 300),
         ]
 
-    def update(self, dt: float, spawn_interval: float, students: list):
-        """
-        Controla la aparición de nuevos alumnos.
-        - dt: delta time
-        - spawn_interval: tiempo entre spawns (definido por GameClock)
-        - students: lista global de alumnos
-        """
-        self.timer += dt
+    def spawn_initial(self, students):
+        if self.spawned:
+            return
 
-        if self.timer >= spawn_interval:
-            self.timer = 0.0
-            self.spawn_student(students)
+        for target in self.spawn_positions:
+            student = Student(self.initial_position, target)
+            students.append(student)
 
-    def spawn_student(self, students: list):
-        position = random.choice(self.spawn_positions)
-        student = Student(position)
-        students.append(student)
+        self.spawned = True

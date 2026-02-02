@@ -1,0 +1,28 @@
+{
+  "mochila_basica": {
+    "name": "Mochila de Estudiante",
+    "type": "static",
+    "width": 32,
+    "height": 32,
+    "color": [139, 69, 19],
+    "asset_path": "assets/images/obstacles/backpack.png"
+  },
+  "silla_escolar": {
+    "name": "Silla Deslizable",
+    "type": "dynamic",
+    "width": 40,
+    "height": 40,
+    "color": [70, 70, 70],
+    "speed_min": 80,
+    "speed_max": 150,
+    "asset_path": "assets/images/obstacles/chair.png"
+  },
+  "mesa_profesor": {
+    "name": "Escritorio",
+    "type": "static",
+    "width": 100,
+    "height": 50,
+    "color": [101, 67, 33],
+    "asset_path": "assets/images/obstacles/desk.png"
+  }
+}
