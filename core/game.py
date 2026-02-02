@@ -24,14 +24,18 @@ class Game:
         self.obstacles = []
 
         self.input_system = InputSystem(self.player)
-        self.movement_system = MovementSystem(self.player, self.obstacles, self.input_system)
+        self.movement_system = MovementSystem(self.player, self.obstacles)
         self.interaction_system = InteractionSystem(self.player)
         self.spawn_system = SpawnSystem()
         self.chaos_system = ChaosSystem()
 
         # Load background image
-        self.background = pygame.image.load(os.path.join('assets', 'images', 'aula.png')).convert()
-        self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.background = pygame.image.load(
+            os.path.join("assets", "images", "aula.png")
+        ).convert()
+        self.background = pygame.transform.scale(
+            self.background, (SCREEN_WIDTH, SCREEN_HEIGHT)
+        )
 
     def update(self, dt: float) -> bool:
         self.clock.update(dt)
@@ -39,7 +43,7 @@ class Game:
         if self.state_manager.is_game_over():
             return False
         self.input_system.update()
-        self.movement_system.update(dt, self.students)
+        self.movement_system.update(dt)
         self.spawn_system.update(dt, self.clock.spawn_interval, self.students)
         self.interaction_system.update(self.students)
         self.chaos_system.update(dt, self.clock.chaos_multiplier, self.students)

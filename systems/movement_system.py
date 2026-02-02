@@ -1,20 +1,26 @@
+# systems/movement_system.py
+import pygame
+
+
 class MovementSystem:
-    def __init__(self, player, obstacles, input_system):
+    def __init__(self, player, obstacles):
         self.player = player
         self.obstacles = obstacles
-        self.input_system = input_system
 
-    def update(self, dt, students):
-        # Update player position
-        direction = self.input_system.direction
-        self.player.update(dt, direction)
+    def update(self, dt):
+        direction = self.player.move_direction
 
-        # Update students if needed
-        for student in students:
-            student.update(dt)
+        if direction.length_squared() == 0:
+            return
 
-        # Update obstacles
+        displacement = direction * self.player.speed * dt
+        new_position = self.player.position + displacement
+
+        future_rect = pygame.Rect(new_position.x, new_position.y, *self.player.size)
+
+        # Colisión simple con obstáculos
         for obstacle in self.obstacles:
-            obstacle.update()
-            
-            
+            if future_rect.colliderect(obstacle.rect):
+                return  # bloquea el movimiento
+
+        self.player.position = new_position
