@@ -12,24 +12,40 @@ class Menu:
         self.font = pygame.font.Font("ui/fonts/early_gameboy.ttf", 48)
         self.title_font = pygame.font.Font("ui/fonts/early_gameboy.ttf", 50)
 
-        self.color_normal = (200, 200, 200)
-        self.color_selected = (255, 220, 100)
-        self.bg_color = (30, 30, 40)
+# 116,103,193 LAVANDA / LILA CLARO
+# 46,42,79 AZUL MARINO
+# 243,181,47 AMARILLO CLARO
+# 190,59,108 ROSA/MAGENTA 
+# 229,33,46 ROSA ANARANJADO 
+# 200,200,200 GRIS
+# 30,30,40 AZUL GRISACEO 
+# 255,255,255 BLANCO
+        self.color_normal = (116,103,193)
+        self.color_selected = (255,220,100)
+        self.bg_color = (46,42,79)
 
         self.buttons = []
         self._create_buttons()
+        
+        #Para agregar un fondo 
+        self.bg_image = pygame.image.load("ui/image/clouds_2.png").convert()
+        self.bg_image = pygame.transform.scale(self.bg_image, (self.screen.get_width(), self.screen.get_height()))
+
 
     def _create_buttons(self):
         center_x = self.screen.get_width() // 2
         start_y = self.screen.get_height() // 2
 
         for i, texto in enumerate(self.opciones):
-            rect = pygame.Rect(0, 0, 300, 60)
-            rect.center = (center_x, start_y + i * 80)
+            rect = pygame.Rect(0, 0, 450, 60) #LOS DOS ULTIMOS NUMEROS SON ANCHO Y ALTO RESPECTIVAMENTE
+            rect.center = (center_x, start_y + i * 120) #DISTANCIA ENTRE LOS BOTONES
             self.buttons.append((texto, rect))
 
     def render(self):
-        self.screen.fill(self.bg_color)
+        #self.screen.fill(self.bg_color) para ponerle un color al fondo
+
+        #Para agregar una imagen de fondo
+        self.screen.blit(self.bg_image, (0, 0)) 
         self._draw_title()
         self._draw_buttons()
 
@@ -40,14 +56,27 @@ class Menu:
     
     def _draw_buttons(self):
         for i, (texto, rect) in enumerate(self.buttons):
-            color = self.color_selected if i == self.selected_index else self.color_normal
+            # Color del botón
+            if i == self.selected_index:
+                # Parpadeo cada 500ms
+                color = (255, 220, 100) if pygame.time.get_ticks() % 500 < 250 else (243, 181, 47)
+            else:
+                color = self.color_normal
 
-            pygame.draw.rect(self.screen, color, rect, border_radius=8)
+            # Animación de tamaño del botón 
+            draw_rect = rect.copy()  # no tocamos el rect original
+            if i == self.selected_index:
+                draw_rect.inflate_ip(10, 5)  # ancho +10, alto +5
 
+            # Dibujar rectángulo 
+            pygame.draw.rect(self.screen, color, draw_rect, border_radius=8)
+
+            # Dibujar texto centrado 
             text_surf = self.font.render(texto, True, (0, 0, 0))
-            text_rect = text_surf.get_rect(center=rect.center)
+            text_rect = text_surf.get_rect(center=draw_rect.center)
             self.screen.blit(text_surf, text_rect)
 
+    
     def update(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
@@ -102,7 +131,7 @@ class Menu_GameOver(Menu):
         super().__init__(
             screen,
             "Game Over",
-            ["Volver a jugar", "Salir"]
+            ["Reiniciar", "Salir"]
         )        
 
 def main():
@@ -137,7 +166,7 @@ class Menu_Pausa(Menu):
         super().__init__(
             screen,
             "Juego en Pausa",
-            ["Reanudar partida", "Salir"]
+            ["Reanudar", "Salir"]
         )        
 
 def main():
