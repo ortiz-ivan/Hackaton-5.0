@@ -40,7 +40,7 @@ class Game:
         # ─────────────────────────────
         # --- Sistema de movimiento del jugador ---
         self.input_system = InputSystem(self.player)
-        self.movement_system = MovementSystem(self.player, self.obstacles)
+        self.movement_system = MovementSystem(self.player, self.obstacles, self.screen.get_rect())
 
         # --- Sistema de interacción ---
         self.interaction_system = InteractionSystem(self.player, self.input_system)
@@ -93,14 +93,14 @@ class Game:
         self.input_system.update()
 
         # --- Movimiento (player + students) ---
-        self.movement_system.update(dt, self.students)
+        self.movement_system.update(dt)
 
         # --- Interacción ---
         self.interaction_system.update(self.students)
 
         # --- Actualizar estudiantes ---
         for student in self.students:
-            student.update(dt)
+            student.update(dt, self.obstacles)
 
         # --- Remover estudiantes que se fueron ---
         self.students = [s for s in self.students if s.state != "left"]

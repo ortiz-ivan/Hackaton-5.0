@@ -38,13 +38,16 @@ class Student(pygame.sprite.Sprite):
         self.image = self.images["walking"]
         self.rect = self.image.get_rect(center=self.position)
 
-    def update(self, dt):
+    def update(self, dt, obstacles):
         if self.state == "walking":
             direction = self.target_position - self.position
 
             if direction.length() > 0:
                 direction = direction.normalize()
-                self.position += direction * self.speed * dt
+                new_position = self.position + direction * self.speed * dt
+                self.rect.center = new_position
+                if not any(self.rect.colliderect(obstacle.rect) for obstacle in obstacles):
+                    self.position = new_position
                 self.rect.center = self.position
 
             if self.position.distance_to(self.target_position) < 10:
@@ -55,7 +58,10 @@ class Student(pygame.sprite.Sprite):
 
             if direction.length() > 0:
                 direction = direction.normalize()
-                self.position += direction * self.speed * dt
+                new_position = self.position + direction * self.speed * dt
+                self.rect.center = new_position
+                if not any(self.rect.colliderect(obstacle.rect) for obstacle in obstacles):
+                    self.position = new_position
                 self.rect.center = self.position
 
             if self.position.distance_to(self.target_position) < 10:
