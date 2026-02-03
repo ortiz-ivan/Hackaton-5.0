@@ -34,7 +34,11 @@ class Game:
         # Obstáculos estáticos (mesas)
         # ─────────────────────────────
         self.obstacles = pygame.sprite.Group()
-        self._setup_obstacles()
+        
+        # Temporizador para los 5 segundos
+        self.spawn_timer = 0
+        self.spawn_interval = 5.0
+        self._spawn_random_obstacle() # Creamos el primero
 
         # ─────────────────────────────
         # Sistemas
