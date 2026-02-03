@@ -4,7 +4,7 @@ import random
 class SpawnSystem:
     def __init__(self):
         self.spawned = False
-        self.initial_position = (400, 50)
+        self.initial_position = (720, 500)
         self.spawn_positions = [
             (400, 300),
             (550, 300),
