@@ -69,6 +69,9 @@ class Game:
         for student in self.students:
             student.update(dt)
 
+        # --- Actualizar spawn ---
+        self.spawn_system.update(dt, self.students)
+
         # --- Actualizar obstáculos (aunque ahora son estáticos) ---
         self.obstacles.update()
 
