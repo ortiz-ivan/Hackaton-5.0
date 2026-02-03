@@ -4,6 +4,7 @@ import os
 from systems.spawn_system import SpawnSystem
 from systems.input_system import InputSystem
 from systems.movement_system import MovementSystem
+from systems.interaction_system import InteractionSystem
 
 from entities.player import Player
 from entities.obstacle import Obstacle
@@ -37,17 +38,17 @@ class Game:
         # ─────────────────────────────
         # Sistemas
         # ─────────────────────────────
+        # --- Sistema de movimiento del jugador ---
         self.input_system = InputSystem(self.player)
         self.movement_system = MovementSystem(self.player, self.obstacles)
 
-        # ─────────────────────────────
-        # Estudiantes
-        # ─────────────────────────────
+        # --- Sistema de interacción ---
+        self.interaction_system = InteractionSystem(self.player, self.input_system)
+
+        # --- Estudiantes ---
         self.students = []
 
-        # ─────────────────────────────
-        # Spawn de estudiantes
-        # ─────────────────────────────
+        # --- Sistema de spawn de estudiantes ---
         self.spawn_system = SpawnSystem()
         self.spawn_system.spawn_initial(self.students)
 
@@ -88,18 +89,24 @@ class Game:
     # Update
     # ─────────────────────────────
     def update(self, dt):
-        # Input y movimiento
+        # --- Input y movimiento del jugador ---
         self.input_system.update()
         self.movement_system.update(dt)
 
-        # Estudiantes
+        # --- Interacción ---
+        self.interaction_system.update(self.students)
+
+        # --- Actualizar estudiantes ---
         for student in self.students:
             student.update(dt)
 
-        # Spawn
+        # --- Remover estudiantes que se fueron ---
+        self.students = [s for s in self.students if s.state != "left"]
+
+        # --- Actualizar spawn ---
         self.spawn_system.update(dt, self.students)
 
-        # Obstáculos (estáticos, pero compatible con SpriteGroup)
+        # --- Actualizar obstáculos (aunque ahora son estáticos) ---
         self.obstacles.update()
 
     # ─────────────────────────────

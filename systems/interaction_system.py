@@ -1,12 +1,12 @@
 # systems/interaction_system.py
+import pygame
 
 
 class InteractionSystem:
     INTERACTION_DISTANCE = 40  # píxeles
 
-    def __init__(self, player, chaos_system, input_system):
+    def __init__(self, player, input_system):
         self.player = player
-        self.chaos_system = chaos_system
         self.input_system = input_system
 
     def update(self, students):
@@ -17,8 +17,7 @@ class InteractionSystem:
         student = self._get_nearby_student(students)
 
         if student is None:
-            # Interacción al aire → error
-            self.chaos_system.on_failed_interaction()
+            # No hay estudiante cerca
             return
 
         self._handle_interaction(student)
@@ -30,15 +29,18 @@ class InteractionSystem:
         return None
 
     def _is_close(self, a, b):
-        dx = a.rect.centerx - b.rect.centerx
-        dy = a.rect.centery - b.rect.centery
+        if hasattr(a, 'rect'):
+            ax, ay = a.rect.centerx, a.rect.centery
+        else:
+            ax, ay = a.position.x, a.position.y
+        if hasattr(b, 'rect'):
+            bx, by = b.rect.centerx, b.rect.centery
+        else:
+            bx, by = b.position.x, b.position.y
+        dx = ax - bx
+        dy = ay - by
         return (dx * dx + dy * dy) ** 0.5 <= self.INTERACTION_DISTANCE
 
     def _handle_interaction(self, student):
-        if student.can_interact():
-            student.on_interact_success()
-            self.chaos_system.on_correct_interaction(student.state)
-            self.player.add_prestige(student.get_prestige_reward())
-        else:
-            student.on_interact_fail()
-            self.chaos_system.on_failed_interaction()
+        student.state = "leaving"
+        student.target_position = pygame.Vector2(720, 500)  # puerta

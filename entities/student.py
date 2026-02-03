@@ -50,6 +50,17 @@ class Student(pygame.sprite.Sprite):
             if self.position.distance_to(self.target_position) < 10:
                 self.state = "seated"
                 self.icon = random.choice(["sleeping", "talking", "question"])
+        elif self.state == "leaving":
+            direction = self.target_position - self.position
+
+            if direction.length() > 0:
+                direction = direction.normalize()
+                self.position += direction * self.speed * dt
+                self.rect.center = self.position
+
+            if self.position.distance_to(self.target_position) < 10:
+                self.state = "left"
+            
 
     def render(self, screen):
         screen.blit(self.image, self.rect)
