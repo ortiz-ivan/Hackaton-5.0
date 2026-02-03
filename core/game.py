@@ -113,7 +113,7 @@ class Game:
             Obstacle(92, 321, 140, 40),
             Obstacle(318, 321, 140, 40),
             Obstacle(540, 320, 140, 40),
-            Obstacle(92, 405, 140, 40),
+           # Obstacle(92, 405, 140, 40),
             Obstacle(318, 405, 140, 40),
             Obstacle(540, 405, 140, 40),
             Obstacle(92, 490, 140, 40),

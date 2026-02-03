@@ -60,7 +60,7 @@ class Student(pygame.sprite.Sprite):
                 self.move_direction = pygame.Vector2(0, 0)
 
             # Verificar si llegó al target
-            if self.position.distance_to(self.target_pos) < 20:
+            if self.position.distance_to(self.target_pos) < 60:
                 if self.state == "walking_to_seat":
                     # Verificar si el asiento está ocupado por otro estudiante
                     occupied = any(
