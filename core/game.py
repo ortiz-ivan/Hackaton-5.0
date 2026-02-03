@@ -1,6 +1,8 @@
 import pygame
 import os
+import random
 
+from utils.helpers import load_obstacle_data
 from systems.spawn_system import SpawnSystem
 from systems.input_system import InputSystem
 from systems.movement_system import MovementSystem
@@ -34,7 +36,8 @@ class Game:
         # Obstáculos estáticos (mesas)
         # ─────────────────────────────
         self.obstacles = pygame.sprite.Group()
-        
+        self._setup_obstacles()
+
         # Temporizador para los 5 segundos
         self.spawn_timer = 0
         self.spawn_interval = 5.0
@@ -119,6 +122,20 @@ class Game:
         for mesa in mesas:
             self.obstacles.add(mesa)
 
+    def _spawn_random_obstacle(self):
+        """Crea un obstáculo aleatorio usando data/obstacles.json si está disponible."""
+        configs = load_obstacle_data()
+        if not configs:
+            return
+        cfg = random.choice(list(configs.values()))
+        width = cfg.get("width", 32)
+        height = cfg.get("height", 32)
+        screen_rect = self.screen.get_rect()
+        x = random.randint(0, max(0, screen_rect.width - width))
+        y = random.randint(0, max(0, screen_rect.height - height))
+        ob = Obstacle(x, y, cfg)
+        self.obstacles.add(ob)
+
     # ─────────────────────────────
     # Obtener asiento libre
     # ─────────────────────────────
@@ -162,7 +179,12 @@ class Game:
         )
 
         # --- Obstáculos ---
-        self.obstacles.update()
+        # Spawn aleatorio periódico
+        self.spawn_timer += dt
+        if self.spawn_timer >= self.spawn_interval:
+            self._spawn_random_obstacle()
+            self.spawn_timer = 0
+        self.obstacles.update(dt)
 
     # ─────────────────────────────
     # Render
