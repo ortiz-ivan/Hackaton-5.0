@@ -1,17 +1,23 @@
 import pygame
 import os
+
 from systems.spawn_system import SpawnSystem
-from entities.player import Player
-from entities.obstacle import Obstacle
 from systems.input_system import InputSystem
 from systems.movement_system import MovementSystem
+from systems.interaction_system import InteractionSystem
+
+from entities.player import Player
+from entities.obstacle import Obstacle
+from entities.student import Student
 
 
 class Game:
     def __init__(self, screen):
         self.screen = screen
 
-        # --- Cargar fondo (aula) ---
+        # ─────────────────────────────
+        # Fondo (aula)
+        # ─────────────────────────────
         self.background = pygame.image.load(
             os.path.join("assets", "images", "aula.png")
         ).convert()
@@ -19,10 +25,14 @@ class Game:
             self.background, self.screen.get_size()
         )
 
-        # --- Crear jugador ---
+        # ─────────────────────────────
+        # Jugador
+        # ─────────────────────────────
         self.player = Player((100, 100))
 
-        # --- Obstáculos estáticos ---
+        # ─────────────────────────────
+        # Obstáculos estáticos (mesas)
+        # ─────────────────────────────
         self.obstacles = pygame.sprite.Group()
         
         # Temporizador para los 5 segundos
@@ -30,74 +40,141 @@ class Game:
         self.spawn_interval = 5.0
         self._spawn_random_obstacle() # Creamos el primero
 
-        # --- Sistema de movimiento del jugador ---
+        # ─────────────────────────────
+        # Sistemas
+        # ─────────────────────────────
         self.input_system = InputSystem(self.player)
-        self.movement_system = MovementSystem(self.player, self.obstacles)
+        self.movement_system = MovementSystem(
+            self.player, self.obstacles, self.screen.get_rect()
+        )
+        self.interaction_system = InteractionSystem(self.player, self.input_system)
 
-        # --- Estudiantes ---
+        # ─────────────────────────────
+        # Layout de asientos
+        # ─────────────────────────────
+        self.seats = [
+            pygame.Vector2(125, 80),
+            pygame.Vector2(350, 80),
+            pygame.Vector2(575, 80),
+            pygame.Vector2(125, 167),
+            pygame.Vector2(350, 167),
+            pygame.Vector2(575, 167),
+            pygame.Vector2(125, 254),
+            pygame.Vector2(350, 254),
+            pygame.Vector2(575, 254),
+            pygame.Vector2(125, 341),
+            pygame.Vector2(350, 341),
+            pygame.Vector2(575, 341),
+            pygame.Vector2(125, 428),
+            pygame.Vector2(350, 428),
+            pygame.Vector2(575, 428),
+            pygame.Vector2(125, 515),
+            pygame.Vector2(350, 515),
+            pygame.Vector2(575, 515),
+        ]
+        self.seat_occupied = [False] * len(self.seats)
+
+        # Salida de los NPCs
+        self.exit_position = pygame.Vector2(-50, 100)
+
+        # ─────────────────────────────
+        # Estudiantes
+        # ─────────────────────────────
         self.students = []
 
-        # --- Obstáculos estáticos ---
-        self.obstacles = pygame.sprite.Group()
-        self._setup_obstacles()
-
-        # --- Sistema de movimiento del jugador ---
-        self.input_system = InputSystem(self.player)
-        self.movement_system = MovementSystem(self.player, self.obstacles)
-
-        # --- Estudiantes ---
-        self.students = []
-
-        # --- Sistema de spawn de estudiantes ---
+        # ─────────────────────────────
+        # Sistema de spawn de estudiantes
+        # ─────────────────────────────
         self.spawn_system = SpawnSystem()
-        self.spawn_system.spawn_initial(self.students)
-        
-        # NOTA: Si self.player no existe aún, comenta la siguiente línea:
-        # self.player = TuClasePlayer() 
-        # self.movement_system = MovementSystem(self.player, self.obstacles)
+        self.spawn_system.spawn_initial(
+            self.students,
+            get_free_seat=self._get_free_seat,
+            exit_position=self.exit_position,
+        )
 
+    # ─────────────────────────────
+    # Layout del aula
+    # ─────────────────────────────
     def _setup_obstacles(self):
-        """Sembrar obstáculos estáticos en el aula"""
-        # Definimos obstáculos directamente (width, height)
-        mochila_width, mochila_height = 40, 40
-        silla_width, silla_height = 50, 50
+        mesas = [
+            Obstacle(92, 60, 140, 40),
+            Obstacle(318, 60, 140, 40),
+            Obstacle(540, 60, 140, 40),
+            Obstacle(92, 147, 140, 40),
+            Obstacle(318, 147, 140, 40),
+            Obstacle(540, 147, 140, 40),
+            Obstacle(92, 234, 140, 40),
+            Obstacle(318, 234, 140, 40),
+            Obstacle(540, 234, 140, 40),
+            Obstacle(92, 321, 140, 40),
+            Obstacle(318, 321, 140, 40),
+            Obstacle(540, 320, 140, 40),
+            Obstacle(92, 405, 140, 40),
+            Obstacle(318, 405, 140, 40),
+            Obstacle(540, 405, 140, 40),
+            Obstacle(92, 490, 140, 40),
+            Obstacle(318, 490, 140, 40),
+            Obstacle(540, 490, 140, 40),
+        ]
+        for mesa in mesas:
+            self.obstacles.add(mesa)
 
-        # Crear mochilas y sillas
-        m1 = Obstacle(200, 150, mochila_width, mochila_height)
-        s1 = Obstacle(400, 300, silla_width, silla_height)
+    # ─────────────────────────────
+    # Obtener asiento libre
+    # ─────────────────────────────
+    def _get_free_seat(self):
+        for i, occupied in enumerate(self.seat_occupied):
+            if not occupied:
+                self.seat_occupied[i] = True
+                return self.seats[i], i  # Retorna asiento y su índice
+        return None, None
 
-        self.obstacles.add(m1, s1)
-
+    # ─────────────────────────────
+    # Update
+    # ─────────────────────────────
     def update(self, dt):
-        # --- Input y movimiento del jugador ---
+        # --- Input ---
         self.input_system.update()
-        self.movement_system.update(dt)
+
+        # --- Movimiento (player + students) ---
+        self.movement_system.update(dt, self.students)
+
+        # --- Interacción ---
+        self.interaction_system.update(self.students)
 
         # --- Actualizar estudiantes ---
         for student in self.students:
-            student.update(dt)
-        
-        # Actualizar obstáculos
-        self.obstacles.update(dt)
-        
-        # Si activaste el movement_system, descomenta esto:
-        # self.movement_system.update(dt)
+            student.update(dt, self.obstacles, self.students, self._get_free_seat)
 
-        # --- Actualizar obstáculos (aunque ahora son estáticos) ---
+            # Liberar asiento si el estudiante se fue
+            if student.state == "left" and student.seat_index is not None:
+                self.seat_occupied[student.seat_index] = False
+
+        # --- Remover estudiantes que se fueron ---
+        self.students = [s for s in self.students if s.state != "left"]
+
+        # --- Spawn dinámico ---
+        self.spawn_system.update(
+            dt,
+            self.students,
+            get_free_seat=self._get_free_seat,
+            exit_position=self.exit_position,
+        )
+
+        # --- Obstáculos ---
         self.obstacles.update()
 
+    # ─────────────────────────────
+    # Render
+    # ─────────────────────────────
     def render(self):
-        # --- Dibujar fondo ---
         self.screen.blit(self.background, (0, 0))
 
-        # --- Dibujar estudiantes ---
         for student in self.students:
             student.render(self.screen)
 
-        # --- Dibujar obstáculos ---
         self.obstacles.draw(self.screen)
 
-        # --- Dibujar jugador ---
         self.player.render(self.screen)
 
         pygame.display.flip()

@@ -26,4 +26,4 @@ class InputSystem:
         self.player.move_direction = direction
 
         # --- Interacción ---
-        self.player.want_interact = keys[pygame.K_SPACE]
+        self.interact_pressed = keys[pygame.K_e]
