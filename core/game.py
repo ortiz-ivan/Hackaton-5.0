@@ -86,19 +86,11 @@ class Game:
         # Sistema de spawn de estudiantes
         # ─────────────────────────────
         self.spawn_system = SpawnSystem()
-<<<<<<< HEAD
-        self.spawn_system.spawn_initial(self.students)
-        
-        # NOTA: Si self.player no existe aún, comenta la siguiente línea:
-        # self.player = TuClasePlayer() 
-        # self.movement_system = MovementSystem(self.player, self.obstacles)
-=======
         self.spawn_system.spawn_initial(
             self.students,
             get_free_seat=self._get_free_seat,
             exit_position=self.exit_position,
         )
->>>>>>> 69ca64a42c3f9d12a62f9f6b5fd7b208d5291f78
 
     # ─────────────────────────────
     # Layout del aula
@@ -152,17 +144,7 @@ class Game:
 
         # --- Actualizar estudiantes ---
         for student in self.students:
-<<<<<<< HEAD
-            student.update(dt)
-        
-        # Actualizar obstáculos
-        self.obstacles.update(dt)
-        
-        # Si activaste el movement_system, descomenta esto:
-        # self.movement_system.update(dt)
-=======
             student.update(dt, self.obstacles)
->>>>>>> 69ca64a42c3f9d12a62f9f6b5fd7b208d5291f78
 
             # Liberar asiento si el estudiante se fue
             if student.state == "left" and student.seat_index is not None:

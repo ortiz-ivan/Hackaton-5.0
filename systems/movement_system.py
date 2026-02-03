@@ -64,12 +64,7 @@ class MovementSystem:
     # Colisiones
     # ─────────────────────────────
     def _check_collision(self, rect):
-<<<<<<< HEAD
-        #Valida si el rectángulo choca con algún obstáculo o límites.
-        # Colisión con obstáculos (Sillas, mochilas, etc.) 
-=======
         # Obstáculos (mesas)
->>>>>>> 69ca64a42c3f9d12a62f9f6b5fd7b208d5291f78
         for obstacle in self.obstacles:
             if rect.colliderect(obstacle.rect):
                 return True
