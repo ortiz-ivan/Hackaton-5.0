@@ -140,7 +140,7 @@ class Game:
 
         # --- Actualizar estudiantes ---
         for student in self.students:
-            student.update(dt, self.obstacles)
+            student.update(dt, self.obstacles, self.students, self._get_free_seat)
 
             # Liberar asiento si el estudiante se fue
             if student.state == "left" and student.seat_index is not None:

@@ -5,7 +5,7 @@ from config import STUDENT_SIZE
 
 
 class Student(pygame.sprite.Sprite):
-    def __init__(self, spawn_pos, seat_pos, exit_pos, seat_index=None):
+    def __init__(self, spawn_pos, seat_pos, exit_pos, seat_index=None, get_free_seat=None):
         super().__init__()
 
         # Posiciones
@@ -24,6 +24,8 @@ class Student(pygame.sprite.Sprite):
             "walking_to_seat"  # walking_to_seat, waiting, interacting, leaving, left
         )
         self.icon = None
+
+        self.get_free_seat = get_free_seat  # función para obtener asiento libre
 
         # Cargar imágenes
         self.images = {
@@ -47,27 +49,40 @@ class Student(pygame.sprite.Sprite):
         self.image = self.images["walking"]
         self.rect = self.image.get_rect(center=self.position)
 
-    def update(self, dt, obstacles):
+    def update(self, dt, obstacles, students, get_free_seat):
         # Solo moverse si está caminando o dejando
         if self.state in ["walking_to_seat", "leaving"]:
             direction = self.target_pos - self.position
             if direction.length() > 0:
                 direction = direction.normalize()
                 self.move_direction = direction
-                new_position = self.position + direction * self.speed * dt
-
-                # Chequeo colisión con obstáculos
-                self.rect.center = new_position
-                if not any(self.rect.colliderect(ob.rect) for ob in obstacles):
-                    self.position = new_position
-                self.rect.center = self.position
+            else:
+                self.move_direction = pygame.Vector2(0, 0)
 
             # Verificar si llegó al target
-            if self.position.distance_to(self.target_pos) < 5:
+            if self.position.distance_to(self.target_pos) < 20:
                 if self.state == "walking_to_seat":
-                    self.state = "waiting"
-                    self.move_direction = pygame.Vector2(0, 0)
-                    self.icon = random.choice(["sleeping", "talking", "question"])
+                    # Verificar si el asiento está ocupado por otro estudiante
+                    occupied = any(
+                        s != self and s.state in ["waiting", "walking_to_seat"] and
+                        s.position.distance_to(self.target_pos) < 30
+                        for s in students
+                    )
+                    if occupied:
+                        # Buscar otro asiento libre
+                        result = get_free_seat()
+                        if result:
+                            new_seat_pos, new_seat_index = result
+                            self.target_pos = new_seat_pos
+                            self.seat_index = new_seat_index
+                            # Continuar moviéndose
+                        else:
+                            # No hay asientos libres, quedarse esperando o algo
+                            pass
+                    else:
+                        self.state = "waiting"
+                        self.move_direction = pygame.Vector2(0, 0)
+                        self.icon = random.choice(["sleeping", "talking", "question"])
                 elif self.state == "leaving":
                     self.state = "left"
 
