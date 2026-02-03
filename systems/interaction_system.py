@@ -42,22 +42,5 @@ class InteractionSystem:
         return (dx * dx + dy * dy) ** 0.5 <= self.INTERACTION_DISTANCE
 
     def _handle_interaction(self, student):
-        if student.can_interact():
-            # Interacción correcta: el estudiante se dirige a la salida
-            student.on_interact_success()
-            student.target_pos = student.exit_pos
-            student.state = "leaving"
-
-            # Notificar al ChaosSystem si existe
-            if self.chaos_system:
-                self.chaos_system.on_correct_interaction(student.state)
-
-            # Aumentar prestigio del jugador si tiene el método
-            if hasattr(self.player, "add_prestige"):
-                self.player.add_prestige(student.get_prestige_reward())
-
-        else:
-            # Interacción fallida
-            student.on_interact_fail()
-            if self.chaos_system:
-                self.chaos_system.on_failed_interaction()
+        student.target_pos = student.exit_pos
+        student.state = "leaving"

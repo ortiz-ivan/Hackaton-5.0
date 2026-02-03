@@ -29,6 +29,7 @@ class SpawnSystem:
                 seat_pos=seat_pos,
                 exit_pos=exit_position,
                 seat_index=seat_index,
+                get_free_seat=get_free_seat,
             )
             students.append(student)
 
@@ -48,6 +49,7 @@ class SpawnSystem:
                     seat_pos=seat_pos,
                     exit_pos=exit_position,
                     seat_index=seat_index,
+                    get_free_seat=get_free_seat,
                 )
                 students.append(student)
             self.timer = 0
