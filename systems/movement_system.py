@@ -24,7 +24,7 @@ class MovementSystem:
         if is_player:
             direction = entity.move_direction
         else:
-            direction = entity.target_position - entity.position
+            direction = entity.target_pos - entity.position
 
         if direction.length_squared() == 0:
             return
