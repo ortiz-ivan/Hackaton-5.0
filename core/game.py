@@ -89,9 +89,11 @@ class Game:
     # Update
     # ─────────────────────────────
     def update(self, dt):
-        # --- Input y movimiento del jugador ---
+        # --- Input ---
         self.input_system.update()
-        self.movement_system.update(dt)
+
+        # --- Movimiento (player + students) ---
+        self.movement_system.update(dt, self.students)
 
         # --- Interacción ---
         self.interaction_system.update(self.students)
@@ -103,10 +105,10 @@ class Game:
         # --- Remover estudiantes que se fueron ---
         self.students = [s for s in self.students if s.state != "left"]
 
-        # --- Actualizar spawn ---
+        # --- Spawn ---
         self.spawn_system.update(dt, self.students)
 
-        # --- Actualizar obstáculos (aunque ahora son estáticos) ---
+        # --- Obstáculos ---
         self.obstacles.update()
 
     # ─────────────────────────────
