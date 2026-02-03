@@ -1,13 +1,13 @@
-# systems/interaction_system.py
 import pygame
 
 
 class InteractionSystem:
     INTERACTION_DISTANCE = 40  # píxeles
 
-    def __init__(self, player, input_system):
+    def __init__(self, player, input_system, chaos_system=None):
         self.player = player
         self.input_system = input_system
+        self.chaos_system = chaos_system  # opcional, puede ser None
 
     def update(self, students):
         # Solo actuamos si el jugador intenta interactuar
@@ -15,10 +15,8 @@ class InteractionSystem:
             return
 
         student = self._get_nearby_student(students)
-
         if student is None:
-            # No hay estudiante cerca
-            return
+            return  # No hay estudiante cerca
 
         self._handle_interaction(student)
 
@@ -29,18 +27,37 @@ class InteractionSystem:
         return None
 
     def _is_close(self, a, b):
-        if hasattr(a, 'rect'):
-            ax, ay = a.rect.centerx, a.rect.centery
-        else:
-            ax, ay = a.position.x, a.position.y
-        if hasattr(b, 'rect'):
-            bx, by = b.rect.centerx, b.rect.centery
-        else:
-            bx, by = b.position.x, b.position.y
+        ax, ay = (
+            (a.rect.centerx, a.rect.centery)
+            if hasattr(a, "rect")
+            else (a.position.x, a.position.y)
+        )
+        bx, by = (
+            (b.rect.centerx, b.rect.centery)
+            if hasattr(b, "rect")
+            else (b.position.x, b.position.y)
+        )
         dx = ax - bx
         dy = ay - by
         return (dx * dx + dy * dy) ** 0.5 <= self.INTERACTION_DISTANCE
 
     def _handle_interaction(self, student):
-        student.state = "leaving"
-        student.target_position = pygame.Vector2(720, 500)  # puerta
+        if student.can_interact():
+            # Interacción correcta: el estudiante se dirige a la salida
+            student.on_interact_success()
+            student.target_pos = student.exit_pos
+            student.state = "leaving"
+
+            # Notificar al ChaosSystem si existe
+            if self.chaos_system:
+                self.chaos_system.on_correct_interaction(student.state)
+
+            # Aumentar prestigio del jugador si tiene el método
+            if hasattr(self.player, "add_prestige"):
+                self.player.add_prestige(student.get_prestige_reward())
+
+        else:
+            # Interacción fallida
+            student.on_interact_fail()
+            if self.chaos_system:
+                self.chaos_system.on_failed_interaction()

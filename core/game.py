@@ -8,6 +8,7 @@ from systems.interaction_system import InteractionSystem
 
 from entities.player import Player
 from entities.obstacle import Obstacle
+from entities.student import Student
 
 
 class Game:
@@ -38,52 +39,91 @@ class Game:
         # ─────────────────────────────
         # Sistemas
         # ─────────────────────────────
-        # --- Sistema de movimiento del jugador ---
         self.input_system = InputSystem(self.player)
-        self.movement_system = MovementSystem(self.player, self.obstacles, self.screen.get_rect())
-
-        # --- Sistema de interacción ---
+        self.movement_system = MovementSystem(
+            self.player, self.obstacles, self.screen.get_rect()
+        )
         self.interaction_system = InteractionSystem(self.player, self.input_system)
 
-        # --- Estudiantes ---
+        # ─────────────────────────────
+        # Layout de asientos
+        # ─────────────────────────────
+        self.seats = [
+            pygame.Vector2(125, 80),
+            pygame.Vector2(350, 80),
+            pygame.Vector2(575, 80),
+            pygame.Vector2(125, 167),
+            pygame.Vector2(350, 167),
+            pygame.Vector2(575, 167),
+            pygame.Vector2(125, 254),
+            pygame.Vector2(350, 254),
+            pygame.Vector2(575, 254),
+            pygame.Vector2(125, 341),
+            pygame.Vector2(350, 341),
+            pygame.Vector2(575, 341),
+            pygame.Vector2(125, 428),
+            pygame.Vector2(350, 428),
+            pygame.Vector2(575, 428),
+            pygame.Vector2(125, 515),
+            pygame.Vector2(350, 515),
+            pygame.Vector2(575, 515),
+        ]
+        self.seat_occupied = [False] * len(self.seats)
+
+        # Salida de los NPCs
+        self.exit_position = pygame.Vector2(-50, 100)
+
+        # ─────────────────────────────
+        # Estudiantes
+        # ─────────────────────────────
         self.students = []
 
-        # --- Sistema de spawn de estudiantes ---
+        # ─────────────────────────────
+        # Sistema de spawn de estudiantes
+        # ─────────────────────────────
         self.spawn_system = SpawnSystem()
-        self.spawn_system.spawn_initial(self.students)
+        self.spawn_system.spawn_initial(
+            self.students,
+            get_free_seat=self._get_free_seat,
+            exit_position=self.exit_position,
+        )
 
     # ─────────────────────────────
     # Layout del aula
     # ─────────────────────────────
     def _setup_obstacles(self):
-        """
-        Define las mesas del aula.
-        Estos obstáculos son sólidos y bloquean el movimiento.
-        """
-
         mesas = [
-            Obstacle(92, 60, 150, 40),
-            Obstacle(318, 60, 150, 40),
-            Obstacle(540, 60, 150, 40),
-            Obstacle(92, 147, 150, 40),
-            Obstacle(318, 147, 150, 40),
-            Obstacle(540, 147, 150, 40),
-            Obstacle(92, 234, 150, 40),
-            Obstacle(318, 234, 150, 40),
-            Obstacle(540, 234, 150, 40),
-            Obstacle(92, 321, 150, 40),
-            Obstacle(318, 321, 150, 40),
-            Obstacle(540, 320, 150, 40),
-            Obstacle(92, 405, 150, 40),
-            Obstacle(318, 405, 150, 40),
-            Obstacle(540, 405, 150, 40),
-            Obstacle(92, 490, 150, 40),
-            Obstacle(318, 490, 150, 40),
-            Obstacle(540, 490, 150, 40),
+            Obstacle(92, 60, 140, 40),
+            Obstacle(318, 60, 140, 40),
+            Obstacle(540, 60, 140, 40),
+            Obstacle(92, 147, 140, 40),
+            Obstacle(318, 147, 140, 40),
+            Obstacle(540, 147, 140, 40),
+            Obstacle(92, 234, 140, 40),
+            Obstacle(318, 234, 140, 40),
+            Obstacle(540, 234, 140, 40),
+            Obstacle(92, 321, 140, 40),
+            Obstacle(318, 321, 140, 40),
+            Obstacle(540, 320, 140, 40),
+            Obstacle(92, 405, 140, 40),
+            Obstacle(318, 405, 140, 40),
+            Obstacle(540, 405, 140, 40),
+            Obstacle(92, 490, 140, 40),
+            Obstacle(318, 490, 140, 40),
+            Obstacle(540, 490, 140, 40),
         ]
-
         for mesa in mesas:
             self.obstacles.add(mesa)
+
+    # ─────────────────────────────
+    # Obtener asiento libre
+    # ─────────────────────────────
+    def _get_free_seat(self):
+        for i, occupied in enumerate(self.seat_occupied):
+            if not occupied:
+                self.seat_occupied[i] = True
+                return self.seats[i], i  # Retorna asiento y su índice
+        return None, None
 
     # ─────────────────────────────
     # Update
@@ -93,7 +133,7 @@ class Game:
         self.input_system.update()
 
         # --- Movimiento (player + students) ---
-        self.movement_system.update(dt)
+        self.movement_system.update(dt, self.students)
 
         # --- Interacción ---
         self.interaction_system.update(self.students)
@@ -102,11 +142,20 @@ class Game:
         for student in self.students:
             student.update(dt, self.obstacles)
 
+            # Liberar asiento si el estudiante se fue
+            if student.state == "left" and student.seat_index is not None:
+                self.seat_occupied[student.seat_index] = False
+
         # --- Remover estudiantes que se fueron ---
         self.students = [s for s in self.students if s.state != "left"]
 
-        # --- Spawn ---
-        self.spawn_system.update(dt, self.students)
+        # --- Spawn dinámico ---
+        self.spawn_system.update(
+            dt,
+            self.students,
+            get_free_seat=self._get_free_seat,
+            exit_position=self.exit_position,
+        )
 
         # --- Obstáculos ---
         self.obstacles.update()
