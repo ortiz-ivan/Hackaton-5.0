@@ -1,40 +1,48 @@
 import pygame
-import time
 
 class PowerUp:
-    def __init__(self, tipo, position, duracion=5):
-        self.tipo = tipo           # "speed", "attention", "patience", "freeze"
-        self.position = position
-        self.duracion = duracion
+    """Representa un power-up individual en el juego"""
+    
+    TYPES = ["speed", "attention", "patience", "freeze"]
+    
+    COLOR_MAP = {
+        "speed": (255, 100, 100),      # Rojo, aumenta velocidad
+        "attention": (100, 255, 100),   # Verde, resetea estados
+        "patience": (100, 100, 255),    # Azul, aumenta paciencia
+        "freeze": (200, 200, 255)       # Azul claro, congela estudiantes
+    }
+    
+    SIZE = 32
+    
+    def __init__(self, type, position):
+        self.type = type
+        self.position = pygame.Vector2(position)
+        self.rect = pygame.Rect(position[0], position[1], self.SIZE, self.SIZE)
         self.active = True
         
-        #Difinimos la imagen segun el tipo de powerup
-
-        self.image = pygame.Surface((32, 32))
-        if tipo == "speed":
-            self.image.fill((255, 0, 0))
-        elif tipo == "attention":
-            self.image.fill((0, 255, 0))
-        elif tipo == "patience":
-            self.image.fill((0, 0, 255))
-        elif tipo == "freeze":
-            self.image.fill((255, 255, 0))
-
-        self.rect = self.image.get_rect(topleft=position)
-        self.start_time = None
-
-    #definimos el metodo activate para activar el powerup
-    def activate(self):
-        self.start_time = time.time()
-        self.active = False
-        
-    #definimos el metodo is_expired para verificar si el powerup ha expirado
-    def is_expired(self):
-        if self.start_time is None:
-            return False
-        return (time.time() - self.start_time) >= self.duracion
+        # Efecto visual (opcional: animación de pulso)
+        self.pulse_timer = 0
+        self.pulse_speed = 3.0
     
-    #definimos el metodo draw para dibujar el powerup en la pantalla
-    def draw(self, screen):
+    def update(self, dt):
+        """Actualiza la animación del power-up"""
         if self.active:
-            screen.blit(self.image, self.rect.topleft)
+            self.pulse_timer += dt * self.pulse_speed
+    
+    def render(self, screen):
+        """Dibuja el power-up con efecto de pulso"""
+        if self.active:
+            import math
+            pulse = abs(math.sin(self.pulse_timer)) * 5
+            size = self.SIZE + int(pulse)
+            
+            # Dibuja con el tamaño pulsante
+            temp_rect = pygame.Rect(
+                self.rect.centerx - size // 2,
+                self.rect.centery - size // 2,
+                size, size
+            )
+            pygame.draw.rect(screen, self.COLOR_MAP[self.type], temp_rect, border_radius=8)
+            
+            # Borde brillante
+            pygame.draw.rect(screen, (255, 255, 255), temp_rect, 2, border_radius=8)
