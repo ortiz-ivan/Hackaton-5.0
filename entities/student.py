@@ -12,8 +12,7 @@ class Student(pygame.sprite.Sprite):
 
         self.speed = 200
         self.state = "walking"
-        self.state_timer = 0
-        self.state_duration = random.uniform(2, 5)
+        self.icon = None
 
         # Cargar imágenes
         self.images = {
@@ -49,17 +48,17 @@ class Student(pygame.sprite.Sprite):
                 self.rect.center = self.position
 
             if self.position.distance_to(self.target_position) < 10:
-                self._change_state()
-        else:
-            self.state_timer += dt
-            if self.state_timer >= self.state_duration:
-                self._change_state()
-
-    def _change_state(self):
-        self.state = random.choice(["sleeping", "talking", "question"])
-        self.image = self.images[self.state]
-        self.state_timer = 0
-        self.state_duration = random.uniform(2, 5)
+                self.state = "seated"
+                self.icon = random.choice(["sleeping", "talking", "question"])
 
     def render(self, screen):
         screen.blit(self.image, self.rect)
+        if self.state == "seated" and self.icon:
+            # Dibujar burbuja
+            bubble_rect = pygame.Rect(self.rect.left - 10, self.rect.top - 50, 60, 40)
+            pygame.draw.rect(screen, (255, 255, 255), bubble_rect, border_radius=10)
+            pygame.draw.rect(screen, (0, 0, 0), bubble_rect, 2, border_radius=10)
+            # Dibujar icono
+            icon_image = self.images[self.icon]
+            icon_rect = icon_image.get_rect(center=bubble_rect.center)
+            screen.blit(icon_image, icon_rect)
