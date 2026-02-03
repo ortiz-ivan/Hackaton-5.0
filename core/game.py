@@ -38,7 +38,6 @@ class Game:
         # Temporizador para los 5 segundos
         self.spawn_timer = 0
         self.spawn_interval = 5.0
-        self._spawn_random_obstacle() # Creamos el primero
 
         # ─────────────────────────────
         # Sistemas
@@ -91,6 +90,11 @@ class Game:
             get_free_seat=self._get_free_seat,
             exit_position=self.exit_position,
         )
+
+        # ─────────────────────────────
+        # Configuramos los obstáculos estáticos
+        # ─────────────────────────────
+        self._setup_obstacles()
 
     # ─────────────────────────────
     # Layout del aula
