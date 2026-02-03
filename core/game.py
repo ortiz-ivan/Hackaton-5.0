@@ -1,17 +1,21 @@
 import pygame
 import os
+
 from systems.spawn_system import SpawnSystem
-from entities.player import Player
-from entities.obstacle import Obstacle
 from systems.input_system import InputSystem
 from systems.movement_system import MovementSystem
+
+from entities.player import Player
+from entities.obstacle import Obstacle
 
 
 class Game:
     def __init__(self, screen):
         self.screen = screen
 
-        # --- Cargar fondo (aula) ---
+        # ─────────────────────────────
+        # Fondo (aula)
+        # ─────────────────────────────
         self.background = pygame.image.load(
             os.path.join("assets", "images", "aula.png")
         ).convert()
@@ -19,74 +23,96 @@ class Game:
             self.background, self.screen.get_size()
         )
 
-        # --- Crear jugador ---
+        # ─────────────────────────────
+        # Jugador
+        # ─────────────────────────────
         self.player = Player((100, 100))
 
-        # --- Obstáculos estáticos ---
+        # ─────────────────────────────
+        # Obstáculos estáticos (mesas)
+        # ─────────────────────────────
         self.obstacles = pygame.sprite.Group()
         self._setup_obstacles()
 
-        # --- Sistema de movimiento del jugador ---
+        # ─────────────────────────────
+        # Sistemas
+        # ─────────────────────────────
         self.input_system = InputSystem(self.player)
         self.movement_system = MovementSystem(self.player, self.obstacles)
 
-        # --- Estudiantes ---
+        # ─────────────────────────────
+        # Estudiantes
+        # ─────────────────────────────
         self.students = []
 
-        # --- Obstáculos estáticos ---
-        self.obstacles = pygame.sprite.Group()
-        self._setup_obstacles()
-
-        # --- Sistema de movimiento del jugador ---
-        self.input_system = InputSystem(self.player)
-        self.movement_system = MovementSystem(self.player, self.obstacles)
-
-        # --- Estudiantes ---
-        self.students = []
-
-        # --- Sistema de spawn de estudiantes ---
+        # ─────────────────────────────
+        # Spawn de estudiantes
+        # ─────────────────────────────
         self.spawn_system = SpawnSystem()
         self.spawn_system.spawn_initial(self.students)
 
+    # ─────────────────────────────
+    # Layout del aula
+    # ─────────────────────────────
     def _setup_obstacles(self):
-        """Sembrar obstáculos estáticos en el aula"""
-        # Definimos obstáculos directamente (width, height)
-        mochila_width, mochila_height = 40, 40
-        silla_width, silla_height = 50, 50
+        """
+        Define las mesas del aula.
+        Estos obstáculos son sólidos y bloquean el movimiento.
+        """
 
-        # Crear mochilas y sillas
-        m1 = Obstacle(200, 150, mochila_width, mochila_height)
-        s1 = Obstacle(400, 300, silla_width, silla_height)
+        mesas = [
+            Obstacle(92, 60, 150, 40),
+            Obstacle(318, 60, 150, 40),
+            Obstacle(540, 60, 150, 40),
+            Obstacle(92, 147, 150, 40),
+            Obstacle(318, 147, 150, 40),
+            Obstacle(540, 147, 150, 40),
+            Obstacle(92, 234, 150, 40),
+            Obstacle(318, 234, 150, 40),
+            Obstacle(540, 234, 150, 40),
+            Obstacle(92, 321, 150, 40),
+            Obstacle(318, 321, 150, 40),
+            Obstacle(540, 320, 150, 40),
+            Obstacle(92, 405, 150, 40),
+            Obstacle(318, 405, 150, 40),
+            Obstacle(540, 405, 150, 40),
+            Obstacle(92, 490, 150, 40),
+            Obstacle(318, 490, 150, 40),
+            Obstacle(540, 490, 150, 40),
+        ]
 
-        self.obstacles.add(m1, s1)
+        for mesa in mesas:
+            self.obstacles.add(mesa)
 
+    # ─────────────────────────────
+    # Update
+    # ─────────────────────────────
     def update(self, dt):
-        # --- Input y movimiento del jugador ---
+        # Input y movimiento
         self.input_system.update()
         self.movement_system.update(dt)
 
-        # --- Actualizar estudiantes ---
+        # Estudiantes
         for student in self.students:
             student.update(dt)
 
-        # --- Actualizar spawn ---
+        # Spawn
         self.spawn_system.update(dt, self.students)
 
-        # --- Actualizar obstáculos (aunque ahora son estáticos) ---
+        # Obstáculos (estáticos, pero compatible con SpriteGroup)
         self.obstacles.update()
 
+    # ─────────────────────────────
+    # Render
+    # ─────────────────────────────
     def render(self):
-        # --- Dibujar fondo ---
         self.screen.blit(self.background, (0, 0))
 
-        # --- Dibujar estudiantes ---
         for student in self.students:
             student.render(self.screen)
 
-        # --- Dibujar obstáculos ---
         self.obstacles.draw(self.screen)
 
-        # --- Dibujar jugador ---
         self.player.render(self.screen)
 
         pygame.display.flip()
