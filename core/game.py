@@ -71,7 +71,7 @@ class Game:
         self.seat_occupied = [False] * len(self.seats)
 
         # Salida de los NPCs
-        self.exit_position = pygame.Vector2(-50, 100)
+        self.exit_position = pygame.Vector2(720, 500)
 
         # ─────────────────────────────
         # Estudiantes
