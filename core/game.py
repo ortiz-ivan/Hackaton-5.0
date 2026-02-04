@@ -9,6 +9,7 @@ from systems.interaction_system import InteractionSystem
 from entities.player import Player
 from entities.obstacle import Obstacle
 from entities.student import Student
+from data.seats_config import SEATS
 
 
 class Game:
@@ -49,28 +50,9 @@ class Game:
         self.interaction_system = InteractionSystem(self.player, self.input_system)
 
         # ─────────────────────────────
-        # Layout de asientos
+        # Layout de asientos (configurable)
         # ─────────────────────────────
-        self.seats = [
-            pygame.Vector2(125, 80),
-            pygame.Vector2(350, 80),
-            pygame.Vector2(575, 80),
-            pygame.Vector2(125, 167),
-            pygame.Vector2(350, 167),
-            pygame.Vector2(575, 167),
-            pygame.Vector2(125, 254),
-            pygame.Vector2(350, 254),
-            pygame.Vector2(575, 254),
-            pygame.Vector2(125, 341),
-            pygame.Vector2(350, 341),
-            pygame.Vector2(575, 341),
-            pygame.Vector2(125, 428),
-            pygame.Vector2(350, 428),
-            pygame.Vector2(575, 428),
-            pygame.Vector2(125, 515),
-            pygame.Vector2(350, 515),
-            pygame.Vector2(575, 515),
-        ]
+        self.seats = SEATS
         self.seat_occupied = [False] * len(self.seats)
 
         # Salida de los NPCs
@@ -131,7 +113,7 @@ class Game:
             if not occupied:
                 self.seat_occupied[i] = True
                 return self.seats[i], i  # Retorna asiento y su índice
-        return None, None
+        return None
 
     # ─────────────────────────────
     # Update

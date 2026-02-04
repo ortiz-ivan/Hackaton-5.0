@@ -9,7 +9,7 @@ class Student(pygame.sprite.Sprite):
         super().__init__()
 
         # Posiciones
-        self.position = pygame.Vector2(spawn_pos)
+        self.position = pygame.Vector2(seat_pos)  # Aparece directamente en la silla
         self.seat_pos = pygame.Vector2(seat_pos)
         self.exit_pos = pygame.Vector2(exit_pos)
         self.target_pos = self.seat_pos  # inicial, va al asiento
@@ -20,9 +20,7 @@ class Student(pygame.sprite.Sprite):
         self.move_direction = pygame.Vector2(0, 0)
 
         # Estado inicial
-        self.state = (
-            "walking_to_seat"  # walking_to_seat, waiting, interacting, leaving, left
-        )
+        self.state = "waiting"  # Ya sentado, no camina
         self.icon = None
 
         self.get_free_seat = get_free_seat  # función para obtener asiento libre
