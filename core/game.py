@@ -9,65 +9,53 @@ from systems.interaction_system import InteractionSystem
 from entities.player import Player
 from entities.obstacle import Obstacle
 from entities.student import Student
-from ui.hud import HUD  # <--- NUEVO: Importamos tu HUD
+
+# NOTA: Ya no importamos HUD aquí. El HUD vive en main.py.
 
 class Game:
     def __init__(self, screen):
         self.screen = screen
 
         # ─────────────────────────────
-        # Configuración del Juego (Reglas)
+        # Configuración del Juego
         # ─────────────────────────────
-        self.hud = HUD(screen)
-        
-        self.lives = 3              # 3 Vidas (Corazones)
-        self.total_time = 120.0     # 2 Minutos de partida
-        
-        self.life_timer = 30.0      # Cuenta regresiva para perder vida
-        self.max_life_timer = 30.0  # Para dibujar la barra
+        # Eliminamos self.lives, self.timers y self.hud. 
+        # Ahora Game solo se preocupa de la lógica del aula.
         
         self.score = 0
-        self.is_game_over = False
-        self.game_won = False
+        
+        # Bandera para avisar a main.py que hubo una interacción
+        self.interaction_success = False 
+        self.cooldown_interaction = 0.0 # Para evitar "metralleta" de espacio
 
         # ─────────────────────────────
         # Fondo (aula)
         # ─────────────────────────────
         try:
-            self.background = pygame.image.load(
-                os.path.join("assets", "images", "aula.png")
-            ).convert()
-            self.background = pygame.transform.scale(
-                self.background, self.screen.get_size()
-            )
+            path = os.path.join("assets", "images", "aula.png")
+            self.background = pygame.image.load(path).convert()
+            self.background = pygame.transform.scale(self.background, self.screen.get_size())
         except:
-            # Fallback por si no carga la imagen
             self.background = pygame.Surface(self.screen.get_size())
             self.background.fill((56, 142, 60)) # Verde aula
 
         # ─────────────────────────────
-        # Jugador
+        # Jugador y Entidades
         # ─────────────────────────────
         self.player = Player((100, 100))
 
-        # ─────────────────────────────
-        # Obstáculos estáticos (mesas)
-        # ─────────────────────────────
         self.obstacles = pygame.sprite.Group()
-        self.spawn_timer = 0
-        self.spawn_interval = 5.0
+        self._setup_obstacles()
 
         # ─────────────────────────────
         # Sistemas
         # ─────────────────────────────
         self.input_system = InputSystem(self.player)
-        self.movement_system = MovementSystem(
-            self.player, self.obstacles, self.screen.get_rect()
-        )
+        self.movement_system = MovementSystem(self.player, self.obstacles, self.screen.get_rect())
         self.interaction_system = InteractionSystem(self.player, self.input_system)
 
         # ─────────────────────────────
-        # Layout de asientos (Tal cual lo tenías)
+        # Configuración de Asientos y Alumnos
         # ─────────────────────────────
         self.seats = [
             pygame.Vector2(125, 80), pygame.Vector2(350, 80), pygame.Vector2(575, 80),
@@ -78,12 +66,8 @@ class Game:
             pygame.Vector2(125, 515), pygame.Vector2(350, 515), pygame.Vector2(575, 515),
         ]
         self.seat_occupied = [False] * len(self.seats)
-
         self.exit_position = pygame.Vector2(720, 500)
 
-        # ─────────────────────────────
-        # Estudiantes
-        # ─────────────────────────────
         self.students = []
         self.spawn_system = SpawnSystem()
         self.spawn_system.spawn_initial(
@@ -91,8 +75,6 @@ class Game:
             get_free_seat=self._get_free_seat,
             exit_position=self.exit_position,
         )
-
-        self._setup_obstacles()
 
     def _setup_obstacles(self):
         mesas = [
@@ -114,83 +96,71 @@ class Game:
         return None, None
 
     # ─────────────────────────────
-    # Lógica de Interacción (NUEVO)
-    # ─────────────────────────────
-    def alumno_calmado(self):
-        """ Se llama cuando atiendes a un alumno """
-        self.score += 100
-        # Ganamos 5 segundos, pero sin pasar del máximo de 30
-        self.life_timer = min(self.max_life_timer, self.life_timer + 5.0)
-
-    # ─────────────────────────────
-    # Update
+    # UPDATE
     # ─────────────────────────────
     def update(self, dt):
-        # --- 1. Gestión de Tiempos y Vidas (NUEVO) ---
-        
-        # Reloj Global (2 minutos)
-        if self.total_time > 0:
-            self.total_time -= dt
-            if self.total_time <= 0:
-                self.total_time = 0
-                self.game_won = True
-                # Aquí podrías detonar la victoria en main.py
+        # 1. Actualizar cooldown (para no interactuar 60 veces por seg)
+        if self.cooldown_interaction > 0:
+            self.cooldown_interaction -= dt
 
-        # Reloj de Vida (30 segundos)
-        if not self.game_won:
-            self.life_timer -= dt
-            if self.life_timer <= 0:
-                self.lives -= 1           # Perdemos una vida
-                self.life_timer = 30.0    # Reiniciamos el reloj
-                if self.lives <= 0:
-                    self.is_game_over = True # Fin del juego
-
-        # --- 2. Sistemas Existentes ---
+        # 2. Sistemas
         self.input_system.update()
         self.movement_system.update(dt, self.students)
         
-        # OJO: Aquí deberías pasar 'self' o un callback a interaction_system
-        # para que pueda llamar a 'self.alumno_calmado()' cuando haya éxito.
-        self.interaction_system.update(self.students)
-
-        # Actualizar estudiantes
+        # Actualizar lógica de estudiantes
         for student in self.students:
             student.update(dt, self.obstacles, self.students, self._get_free_seat)
             if student.state == "left" and student.seat_index is not None:
                 self.seat_occupied[student.seat_index] = False
-
+        
+        # Eliminar estudiantes que se fueron
         self.students = [s for s in self.students if s.state != "left"]
 
-        self.spawn_system.update(
-            dt,
-            self.students,
-            get_free_seat=self._get_free_seat,
-            exit_position=self.exit_position,
-        )
-
+        # Spawnear nuevos
+        self.spawn_system.update(dt, self.students, get_free_seat=self._get_free_seat, exit_position=self.exit_position)
         self.obstacles.update()
 
+        # 3. DETECTAR INTERACCIÓN
+        # Aquí verificamos si el jugador presiona espacio y activamos la bandera
+        keys = pygame.key.get_pressed()
+        
+        if keys[pygame.K_SPACE] and self.cooldown_interaction <= 0:
+            # Usamos tu sistema de interacción existente
+            # interaction_system.update normalmente devuelve algo, 
+            # pero asumiremos que modifica el estado del estudiante.
+            
+            # Verificamos manualmente colisión para activar la bandera
+            interacted = False
+            player_rect = self.player.rect
+            
+            for student in self.students:
+                # Si el estudiante está esperando y lo tocamos
+                if student.state == "waiting" and player_rect.colliderect(student.rect):
+                    # ¡ÉXITO!
+                    student.resolve_request() # Método hipotético que cambia su estado a 'calmado' o 'leaving'
+                    interacted = True
+                    break # Solo uno a la vez
+            
+            if interacted:
+                self.interaction_success = True
+                self.cooldown_interaction = 0.5 # Esperar medio segundo antes de la próxima
+
     # ─────────────────────────────
-    # Render
+    # RENDER
     # ─────────────────────────────
     def render(self):
         # 1. Fondo
         self.screen.blit(self.background, (0, 0))
 
         # 2. Entidades
-        for student in self.students:
-            student.render(self.screen)
+        # Ordenamos por posición Y para dar sensación de profundidad (opcional)
+        all_sprites = sorted(self.students + [self.player], key=lambda s: s.rect.bottom)
+        
         self.obstacles.draw(self.screen)
-        self.player.render(self.screen)
+        
+        for sprite in all_sprites:
+            sprite.render(self.screen)
 
-        # 3. HUD (Interfaz) - Dibuja encima de todo
-        self.hud.render(
-            chaos_current=self.life_timer,  # Barra verde
-            chaos_max=self.max_life_timer,
-            score=self.score,
-            lives=self.lives,               # Corazones
-            total_time=self.total_time      # Reloj global
-        )
-
-        # IMPORTANTE: Eliminé pygame.display.flip() de aquí
-        # main.py se encarga de eso.
+        # ¡IMPORTANTE! 
+        # YA NO DIBUJAMOS EL HUD AQUÍ.
+        # main.py se encarga de dibujar el HUD encima de todo esto.

@@ -10,6 +10,7 @@ class MovementSystem:
     def update(self, dt, students=None):
         # Mover jugador
         self._move_entity(self.player, dt, is_player=True)
+        self.player.update_rect()  # Sincronizar rect después de mover
 
         # Mover estudiantes
         if students:
