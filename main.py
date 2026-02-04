@@ -57,9 +57,9 @@ def main():
             game.update(dt)     # Actualiza alumnos, caos, etc.
             game.render()       # Dibuja el aula
             
-            # (Opcional) Si el juego detecta Game Over internamente:
-            # if game.is_game_over:
-            #     current_state = STATE_GAMEOVER
+            # Detectar Game Over
+            if game.is_game_over:
+                current_state = STATE_GAMEOVER
 
         # CASO 3: ESTAMOS EN PAUSA
         elif current_state == STATE_PAUSE:

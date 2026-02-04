@@ -41,9 +41,8 @@ class SpawnSystem:
         """
         self.timer += dt
         if self.timer >= self.spawn_interval:
-            result = get_free_seat()
-            if result is not None:
-                seat_pos, seat_index = result
+            seat_pos, seat_index = get_free_seat()
+            if seat_pos is not None:
                 student = Student(
                     spawn_pos=self.initial_position,
                     seat_pos=seat_pos,

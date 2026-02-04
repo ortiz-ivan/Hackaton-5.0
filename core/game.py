@@ -20,9 +20,10 @@ class Game:
         # ─────────────────────────────
         self.hud = HUD(screen)
         
-        self.lives = 3              # 3 Vidas (Corazones)
+        self.lives = 1              # 1 Vida
         self.total_time = 120.0     # 2 Minutos de partida
         
+        # Temporizador de vidas
         self.life_timer = 30.0      # Cuenta regresiva para perder vida
         self.max_life_timer = 30.0  # Para dibujar la barra
         
@@ -64,7 +65,7 @@ class Game:
         self.movement_system = MovementSystem(
             self.player, self.obstacles, self.screen.get_rect()
         )
-        self.interaction_system = InteractionSystem(self.player, self.input_system)
+        self.interaction_system = InteractionSystem(self.player, self.input_system, on_interaction=self.alumno_calmado)
 
         # ─────────────────────────────
         # Layout de asientos (Tal cual lo tenías)
@@ -118,7 +119,12 @@ class Game:
     # ─────────────────────────────
     def alumno_calmado(self):
         """ Se llama cuando atiendes a un alumno """
-        self.score += 100
+        self.score += 5  # Sumar 5 puntos
+        
+        # Cada 30 pts ganamos una vida
+        if self.score % 30 == 0 and self.score > 0:
+            self.lives += 1
+        
         # Ganamos 5 segundos, pero sin pasar del máximo de 30
         self.life_timer = min(self.max_life_timer, self.life_timer + 5.0)
 

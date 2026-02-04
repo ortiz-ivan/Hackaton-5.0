@@ -4,10 +4,11 @@ import pygame
 class InteractionSystem:
     INTERACTION_DISTANCE = 40  # píxeles
 
-    def __init__(self, player, input_system, chaos_system=None):
+    def __init__(self, player, input_system, chaos_system=None, on_interaction=None):
         self.player = player
         self.input_system = input_system
         self.chaos_system = chaos_system  # opcional, puede ser None
+        self.on_interaction = on_interaction  # callback cuando hay interacción
 
     def update(self, students):
         # Solo actuamos si el jugador intenta interactuar
@@ -44,3 +45,7 @@ class InteractionSystem:
     def _handle_interaction(self, student):
         student.target_pos = student.exit_pos
         student.state = "leaving"
+        
+        # Llamar al callback si existe
+        if self.on_interaction:
+            self.on_interaction()
