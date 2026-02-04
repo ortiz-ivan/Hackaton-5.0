@@ -29,7 +29,6 @@ def main():
     while running:
         dt = clock.tick(FPS) / 1000  # delta time en segundos
         dt = min(dt, 0.1) # <--- NUEVO: Si dt es mayor a 0.1, fórulalo a 0.1
-
         events = pygame.event.get()
 
         for event in events:
