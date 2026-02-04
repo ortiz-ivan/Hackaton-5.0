@@ -15,6 +15,26 @@ class Game:
     def __init__(self, screen):
         self.screen = screen
 
+      
+        pygame.mixer.init()
+        #_______________________________________________
+        # Sonidos 
+        # ──────────────────────────────────────────────
+        
+        self.sounds = {
+            "background": pygame.mixer.Sound(os.path.join("assets", "sounds", "fast-typing_ambient.mp3")),
+            "chat": pygame.mixer.Sound(os.path.join("assets", "sounds", "comic_chat_ interactive.mp3")),
+            "question": pygame.mixer.Sound(os.path.join("assets", "sounds", "pregunta_sound.mp3")),
+            "game_over": pygame.mixer.Sound(os.path.join("assets", "sounds", "fail.mp3")),
+        }
+
+        # Reproducir música de fondo en loop
+        self.sounds["background"].set_volume(0.5)  # volumen al 50%
+        self.sounds["background"].play(-1)
+
+
+
+
         # ─────────────────────────────
         # Fondo (aula)
         # ─────────────────────────────
@@ -24,8 +44,7 @@ class Game:
         self.background = pygame.transform.scale(
             self.background, self.screen.get_size()
         )
-
-        # ─────────────────────────────
+   
         # Jugador
         # ─────────────────────────────
         self.player = Player((100, 100))
