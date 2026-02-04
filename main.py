@@ -11,6 +11,12 @@ STATE_PAUSE = "PAUSE"
 
 def main():
     pygame.init()
+    # Inicializar sonido
+    try:
+        pygame.mixer.init()
+    except pygame.error:
+        # Si el mixer falla, el juego sigue sin sonido
+        pass
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Lecture Rush") # Nombre actualizado
     clock = pygame.time.Clock()

@@ -9,18 +9,26 @@ class PowerUpSpawner:
         self.students = students
         self.obstacles = obstacles
         
-        # Configuración de spawn
-        self.spawn_interval = 10.0  # Segundos entre spawns
+        # Configuración de spawn (intervalo se volverá ligeramente aleatorio)
+        self.base_spawn_interval = 10.0  # valor medio en segundos
+        self.spawn_interval = self._next_spawn_interval()
         self.spawn_timer = 0
         self.max_powerups = 3  # Máximo de power-ups simultáneos
         
         # Probabilidad de spawn por tipo
         self.spawn_weights = {
-            "speed": 0.25,
-            "attention": 0.35,
-            "patience": 0.25,
-            "freeze": 0.15
+            "speed": 0.20,
+            "attention": 0.25,
+            "patience": 0.20,
+            "freeze": 0.15,
+            "calm": 0.10,
+            "slow": 0.10,
         }
+
+    def _next_spawn_interval(self):
+        """Devuelve un nuevo intervalo de spawn ligeramente aleatorio."""
+        # Entre 8 y 12 segundos para que no sea tan predecible
+        return random.uniform(self.base_spawn_interval - 2, self.base_spawn_interval + 2)
     
     def get_random_position(self, screen_rect):
         """Genera una posición aleatoria válida para un power-up"""
@@ -78,4 +86,7 @@ class PowerUpSpawner:
         position = self.get_random_position(screen_rect)
         powerup_type = self.choose_powerup_type()
         
+        # Después de spawnear, recalculamos próximo intervalo
+        self.spawn_interval = self._next_spawn_interval()
+
         return PowerUp(powerup_type, position)

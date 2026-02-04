@@ -30,6 +30,9 @@ class Game:
             self.background, self.screen.get_size()
         )
 
+        # Sonido de ambiente (aula)
+        self._init_ambient_sound()
+
         # ─────────────────────────────
         # Jugador
         # ─────────────────────────────
@@ -164,7 +167,7 @@ class Game:
         # --- Actualizar estudiantes ---
         for student in self.students:
             student.update(dt, self.obstacles, self.students, self._get_free_seat)
-
+            
             # Paciencia agotada: estudiante ignorado, aumenta caos
             if getattr(student, 'patience_expired', False):
                 self.chaos_system.on_student_ignored()
@@ -188,7 +191,7 @@ class Game:
         # --- Obstáculos ---
         self.obstacles.update()
         
-         # --- Power-ups ---
+        # --- Power-ups ---
         # Actualizar power-ups existentes
         for pu in self.powerups:
             pu.update(dt)
@@ -222,6 +225,29 @@ class Game:
         
         self.obstacles.draw(self.screen)
         self.player.render(self.screen)
-        
+
+        # Flash de pantalla breve al recoger powerup
+        if getattr(self.powerup_system, "flash_timer", 0) > 0:
+            alpha = int(150 * (self.powerup_system.flash_timer / self.powerup_system.flash_duration))
+            flash_surf = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+            flash_surf.fill((255, 255, 255, max(0, min(alpha, 180))))
+            self.screen.blit(flash_surf, (0, 0))
 
         pygame.display.flip()
+
+    def _init_ambient_sound(self):
+        """Inicia el sonido ambiente del aula si el mixer está disponible."""
+        try:
+            path = os.path.join(
+                "assets",
+                "sounds",
+                "ambient_typing",
+                "fast-typing_ambient.mp3",
+            )
+            if pygame.mixer.get_init():
+                pygame.mixer.music.load(path)
+                pygame.mixer.music.set_volume(0.25)
+                pygame.mixer.music.play(-1)
+        except pygame.error:
+            # Si no está el archivo o falla el mixer, seguimos sin música
+            pass
