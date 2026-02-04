@@ -1,6 +1,8 @@
 import pygame
 import os
+import random
 
+from utils.helpers import load_obstacle_data
 from systems.spawn_system import SpawnSystem
 from systems.input_system import InputSystem
 from systems.movement_system import MovementSystem
@@ -9,6 +11,7 @@ from systems.interaction_system import InteractionSystem
 from entities.player import Player
 from entities.obstacle import Obstacle
 from entities.student import Student
+from data.seats_config import SEATS
 
 # NOTA: Ya no importamos HUD aquí. El HUD vive en main.py.
 
@@ -17,35 +20,28 @@ class Game:
         self.screen = screen
 
         # ─────────────────────────────
-        # Configuración del Juego
-        # ─────────────────────────────
-        # Eliminamos self.lives, self.timers y self.hud. 
-        # Ahora Game solo se preocupa de la lógica del aula.
-        
-        self.score = 0
-        
-        # Bandera para avisar a main.py que hubo una interacción
-        self.interaction_success = False 
-        self.cooldown_interaction = 0.0 # Para evitar "metralleta" de espacio
-
-        # ─────────────────────────────
         # Fondo (aula)
         # ─────────────────────────────
-        try:
-            path = os.path.join("assets", "images", "aula.png")
-            self.background = pygame.image.load(path).convert()
-            self.background = pygame.transform.scale(self.background, self.screen.get_size())
-        except:
-            self.background = pygame.Surface(self.screen.get_size())
-            self.background.fill((56, 142, 60)) # Verde aula
+        self.background = pygame.image.load(
+            os.path.join("assets", "images", "aula.png")
+        ).convert()
+        self.background = pygame.transform.scale(
+            self.background, self.screen.get_size()
+        )
 
         # ─────────────────────────────
-        # Jugador y Entidades
+        # Jugador
         # ─────────────────────────────
         self.player = Player((100, 100))
 
         self.obstacles = pygame.sprite.Group()
-        self._setup_obstacles()
+        
+        # Temporizador para los 5 segundos
+        self.spawn_timer = 0
+        self.spawn_interval = 5.0
+
+        # Cooldown para interacción
+        self.cooldown_interaction = 0
 
         # ─────────────────────────────
         # Sistemas
@@ -55,15 +51,27 @@ class Game:
         self.interaction_system = InteractionSystem(self.player, self.input_system)
 
         # ─────────────────────────────
-        # Configuración de Asientos y Alumnos
+        # Layout de asientos
         # ─────────────────────────────
         self.seats = [
-            pygame.Vector2(125, 80), pygame.Vector2(350, 80), pygame.Vector2(575, 80),
-            pygame.Vector2(125, 167), pygame.Vector2(350, 167), pygame.Vector2(575, 167),
-            pygame.Vector2(125, 254), pygame.Vector2(350, 254), pygame.Vector2(575, 254),
-            pygame.Vector2(125, 341), pygame.Vector2(350, 341), pygame.Vector2(575, 341),
-            pygame.Vector2(125, 428), pygame.Vector2(350, 428), pygame.Vector2(575, 428),
-            pygame.Vector2(125, 515), pygame.Vector2(350, 515), pygame.Vector2(575, 515),
+            pygame.Vector2(125, 80),
+            pygame.Vector2(350, 80),
+            pygame.Vector2(575, 80),
+            pygame.Vector2(125, 167),
+            pygame.Vector2(350, 167),
+            pygame.Vector2(575, 167),
+            pygame.Vector2(125, 254),
+            pygame.Vector2(350, 254),
+            pygame.Vector2(575, 254),
+            pygame.Vector2(125, 341),
+            pygame.Vector2(350, 341),
+            pygame.Vector2(575, 341),
+            pygame.Vector2(125, 428),
+            pygame.Vector2(350, 428),
+            pygame.Vector2(575, 428),
+            pygame.Vector2(125, 515),
+            pygame.Vector2(350, 515),
+            pygame.Vector2(575, 515),
         ]
         self.seat_occupied = [False] * len(self.seats)
         self.exit_position = pygame.Vector2(720, 500)
@@ -78,21 +86,36 @@ class Game:
 
     def _setup_obstacles(self):
         mesas = [
-            Obstacle(92, 60, 140, 40), Obstacle(318, 60, 140, 40), Obstacle(540, 60, 140, 40),
-            Obstacle(92, 147, 140, 40), Obstacle(318, 147, 140, 40), Obstacle(540, 147, 140, 40),
-            Obstacle(92, 234, 140, 40), Obstacle(318, 234, 140, 40), Obstacle(540, 234, 140, 40),
-            Obstacle(92, 321, 140, 40), Obstacle(318, 321, 140, 40), Obstacle(540, 320, 140, 40),
-            Obstacle(92, 405, 140, 40), Obstacle(318, 405, 140, 40), Obstacle(540, 405, 140, 40),
-            Obstacle(92, 490, 140, 40), Obstacle(318, 490, 140, 40), Obstacle(540, 490, 140, 40),
+            Obstacle(92, 60, 140, 40),
+            Obstacle(318, 60, 140, 40),
+            Obstacle(540, 60, 140, 40),
+            Obstacle(92, 147, 140, 40),
+            Obstacle(318, 147, 140, 40),
+            Obstacle(540, 147, 140, 40),
+            Obstacle(92, 234, 140, 40),
+            Obstacle(318, 234, 140, 40),
+            Obstacle(540, 234, 140, 40),
+            Obstacle(92, 321, 140, 40),
+            Obstacle(318, 321, 140, 40),
+            Obstacle(540, 320, 140, 40),
+            Obstacle(92, 405, 140, 40),
+            Obstacle(318, 405, 140, 40),
+            Obstacle(540, 405, 140, 40),
+            Obstacle(92, 490, 140, 40),
+            Obstacle(318, 490, 140, 40),
+            Obstacle(540, 490, 140, 40),
         ]
         for mesa in mesas:
             self.obstacles.add(mesa)
 
+    # ─────────────────────────────
+    # Obtener asiento libre
+    # ─────────────────────────────
     def _get_free_seat(self):
         for i, occupied in enumerate(self.seat_occupied):
             if not occupied:
                 self.seat_occupied[i] = True
-                return self.seats[i], i
+                return self.seats[i], i  # Retorna asiento y su índice
         return None, None
 
     # ─────────────────────────────

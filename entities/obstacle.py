@@ -11,9 +11,12 @@ class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
 
-        # Superficie visual básica (placeholder)
-        self.image = pygame.Surface((width, height))
-        self.image.fill((100, 100, 100))  # Gris temporal
+# 1. Creamos la superficie con soporte para transparencia (SRCALPHA)
+        self.image = pygame.Surface((width, height), pygame.SRCALPHA)
+        
+        # 2. La llenamos con un color totalmente transparente (0, 0, 0, 0)
+        # El cuarto valor (el alfa) en 0 significa 100% transparente.
+        self.image.fill((0, 0, 0, 0))
 
         # Rectángulo de colisión
         self.rect = self.image.get_rect(topleft=(x, y))

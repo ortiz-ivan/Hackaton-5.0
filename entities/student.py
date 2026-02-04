@@ -9,7 +9,7 @@ class Student(pygame.sprite.Sprite):
         super().__init__()
 
         # Posiciones
-        self.position = pygame.Vector2(spawn_pos)
+        self.position = pygame.Vector2(seat_pos)  # Aparece directamente en la silla
         self.seat_pos = pygame.Vector2(seat_pos)
         self.exit_pos = pygame.Vector2(exit_pos)
         self.target_pos = self.seat_pos  # inicial, va al asiento
@@ -20,9 +20,7 @@ class Student(pygame.sprite.Sprite):
         self.move_direction = pygame.Vector2(0, 0)
 
         # Estado inicial
-        self.state = (
-            "walking_to_seat"  # walking_to_seat, waiting, interacting, leaving, left
-        )
+        self.state = "waiting"  # Ya sentado, no camina
         self.icon = None
 
         self.get_free_seat = get_free_seat  # función para obtener asiento libre
@@ -50,6 +48,30 @@ class Student(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.position)
 
     def update(self, dt, obstacles, students, get_free_seat):
+
+        # --- LÓGICA DE SALIDA POR PASILLOS ---
+        if self.state == "leaving":
+            # 1. Definimos el punto del pasillo central (X=710 es el pasillo de la derecha)
+            # Primero se mueve hacia la derecha para salir de entre las mesas
+            if abs(self.position.x - 710) > 10:
+                target_x = 710
+                target_y = self.position.y # Mantiene su altura actual
+            else:
+                # 2. Una vez en el pasillo derecho, baja hacia la puerta
+                target_x = 710
+                target_y = self.exit_pos.y
+
+            target = pygame.Vector2(target_x, target_y)
+            direction = target - self.position
+            
+            if direction.length() > 5:
+                direction = direction.normalize()
+                self.position += direction * self.speed * dt
+                self.rect.midbottom = self.position
+            else:
+                if target_y == self.exit_pos.y: # Si ya llegó a la puerta final
+                    self.state = "left"
+            return
         # Solo moverse si está caminando o dejando
         if self.state in ["walking_to_seat", "leaving"]:
             direction = self.target_pos - self.position
@@ -60,7 +82,7 @@ class Student(pygame.sprite.Sprite):
                 self.move_direction = pygame.Vector2(0, 0)
 
             # Verificar si llegó al target
-            if self.position.distance_to(self.target_pos) < 20:
+            if self.position.distance_to(self.target_pos) < 60:
                 if self.state == "walking_to_seat":
                     # Verificar si el asiento está ocupado por otro estudiante
                     occupied = any(
