@@ -39,8 +39,22 @@ class PowerUpSpawner:
                     collision = True
                     break
             
-            if not collision:
-                return (x, y)
+            if collision:
+                continue
+            
+            # Evitar spawn sobre el jugador
+            if test_rect.colliderect(self.player.rect):
+                continue
+            
+            # Evitar spawn sobre estudiantes
+            for student in self.students:
+                if test_rect.colliderect(student.rect):
+                    collision = True
+                    break
+            if collision:
+                continue
+            
+            return (x, y)
         
         # Si no encuentra posición, retorna centro de pantalla
         return (screen_rect.centerx, screen_rect.centery)

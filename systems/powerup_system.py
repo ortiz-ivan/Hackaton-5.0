@@ -29,16 +29,15 @@ class PowerUpSystem:
             self.active_effects["speed"] = 5.0
             
         elif powerup.type == "attention":
-            # Resetea el estado de todos los estudiantes a neutral
+            # Resetea a estado neutral a estudiantes que necesitan atención (talking/question)
             for student in self.students:
-                if hasattr(student, 'state') and student.state in ["question", "talk"]:
-                    if hasattr(student, 'reset_state'):
-                        student.reset_state()
+                if student.state == "waiting" and getattr(student, 'icon', None) in ["talking", "question"]:
+                    student.reset_state()
                     
         elif powerup.type == "patience":
-            # Aumenta el tiempo de paciencia de todos los estudiantes
+            # Aumenta el tiempo de paciencia de todos los estudiantes esperando
             for student in self.students:
-                if hasattr(student, 'patience_timer'):
+                if student.state == "waiting":
                     student.patience_timer += 5.0
                     
         elif powerup.type == "freeze":

@@ -1,7 +1,7 @@
 import pygame
 import os
 import random
-from config import STUDENT_SIZE
+from config import STUDENT_SIZE, STUDENT_PATIENCE
 
 
 class Student(pygame.sprite.Sprite):
@@ -67,6 +67,12 @@ class Student(pygame.sprite.Sprite):
             if self.state in ["walking_to_seat", "leaving"]:
                 self.move_direction = self.saved_move_direction.copy()
 
+    def reset_state(self):
+        """Resetea al estudiante a estado neutral (powerup attention)"""
+        if self.state == "waiting" and self.icon in ["talking", "question"]:
+            self.icon = "sleeping"
+            self.patience_timer = STUDENT_PATIENCE
+
     def update(self, dt, obstacles, students, get_free_seat):
         if self.frozen:
             self.move_direction = pygame.Vector2(0, 0)
@@ -105,8 +111,15 @@ class Student(pygame.sprite.Sprite):
                         self.state = "waiting"
                         self.move_direction = pygame.Vector2(0, 0)
                         self.icon = random.choice(["sleeping", "talking", "question"])
+                        self.patience_timer = STUDENT_PATIENCE
                 elif self.state == "leaving":
                     self.state = "left"
+        elif self.state == "waiting":
+            self.patience_timer -= dt
+            if self.patience_timer <= 0:
+                self.patience_expired = True
+                self.target_pos = self.exit_pos
+                self.state = "leaving"
 
     def on_interact_success(self):
         """El jugador interactuó correctamente: va a la salida"""

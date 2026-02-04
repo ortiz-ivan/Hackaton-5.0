@@ -20,6 +20,10 @@ class MovementSystem:
     # Movimiento genérico
     # ─────────────────────────────
     def _move_entity(self, entity, dt, is_player=False):
+        # --- Estudiantes congelados no se mueven ---
+        if not is_player and getattr(entity, 'frozen', False):
+            return
+
         # --- Determinar dirección ---
         if is_player:
             direction = entity.move_direction
