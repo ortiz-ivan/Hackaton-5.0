@@ -20,12 +20,7 @@ class Game:
         # ─────────────────────────────
         self.hud = HUD(screen)
         
-        self.lives = 1              # 1 Vida
         self.total_time = 120.0     # 2 Minutos de partida
-        
-        # Temporizador de vidas
-        self.life_timer = 30.0      # Cuenta regresiva para perder vida
-        self.max_life_timer = 30.0  # Para dibujar la barra
         
         self.score = 0
         self.is_game_over = False
@@ -123,16 +118,13 @@ class Game:
         
         # Cada 30 pts ganamos una vida
         if self.score % 30 == 0 and self.score > 0:
-            self.lives += 1
-        
-        # Ganamos 5 segundos, pero sin pasar del máximo de 30
-        self.life_timer = min(self.max_life_timer, self.life_timer + 5.0)
+            pass  # Sin vidas, solo se suma puntos
 
     # ─────────────────────────────
     # Update
     # ─────────────────────────────
     def update(self, dt):
-        # --- 1. Gestión de Tiempos y Vidas (NUEVO) ---
+        # --- 1. Gestión de Tiempos (NUEVO) ---
         
         # Reloj Global (2 minutos)
         if self.total_time > 0:
@@ -141,15 +133,6 @@ class Game:
                 self.total_time = 0
                 self.game_won = True
                 # Aquí podrías detonar la victoria en main.py
-
-        # Reloj de Vida (30 segundos)
-        if not self.game_won:
-            self.life_timer -= dt
-            if self.life_timer <= 0:
-                self.lives -= 1           # Perdemos una vida
-                self.life_timer = 30.0    # Reiniciamos el reloj
-                if self.lives <= 0:
-                    self.is_game_over = True # Fin del juego
 
         # --- 2. Sistemas Existentes ---
         self.input_system.update()
@@ -191,10 +174,7 @@ class Game:
 
         # 3. HUD (Interfaz) - Dibuja encima de todo
         self.hud.render(
-            chaos_current=self.life_timer,  # Barra verde
-            chaos_max=self.max_life_timer,
             score=self.score,
-            lives=self.lives,               # Corazones
             total_time=self.total_time      # Reloj global
         )
 

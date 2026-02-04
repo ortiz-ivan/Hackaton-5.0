@@ -30,16 +30,13 @@ class HUD:
         except:
             print("No se encontró heart.png, se usarán círculos.")
 
-    def render(self, chaos_current, chaos_max, score, lives, total_time):
+    def render(self, score, total_time):
         """
-        chaos_current: Tiempo restante de la vida actual (30 -> 0)
-        chaos_max: Tiempo máximo (30)
-        lives: Cantidad de corazones a dibujar (3, 2, 1)
+        score: Puntuación actual
+        total_time: Tiempo restante de la partida
         """
         self._draw_score(score)
         self._draw_global_timer(total_time)
-        self._draw_lives(lives)
-        self._draw_life_timer_bar(chaos_current, chaos_max)
 
     def _draw_score(self, score):
         score_text = f"PUNTOS: {score:04d}"
