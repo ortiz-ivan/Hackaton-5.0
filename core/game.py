@@ -122,15 +122,22 @@ class Game:
         ob = Obstacle(x, y, width, height)
         self.obstacles.add(ob)
 
-    # ─────────────────────────────
-    # Obtener asiento libre
+
+    # Obtener asiento libre (ALEATORIO)
     # ─────────────────────────────
     def _get_free_seat(self):
-        for i, occupied in enumerate(self.seat_occupied):
-            if not occupied:
-                self.seat_occupied[i] = True
-                return self.seats[i], i  # Retorna asiento y su índice
-        return None
+        # 1. Creamos una lista con los índices de los asientos que están False (libres)
+        indices_libres = [i for i, occupied in enumerate(self.seat_occupied) if not occupied]
+        
+        # 2. Si hay asientos libres, elegimos uno al azar
+        if indices_libres:
+            indice_aleatorio = random.choice(indices_libres)
+            
+            # 3. Lo marcamos como ocupado y retornamos el Vector2 y el índice
+            self.seat_occupied[indice_aleatorio] = True
+            return self.seats[indice_aleatorio], indice_aleatorio
+        
+        return None # Si no hay asientos, no devuelve nada
 
     # ─────────────────────────────
     # Update
