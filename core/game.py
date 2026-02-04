@@ -23,17 +23,27 @@ class Game:
         #_______________________________________________
         # Sonidos 
         # ──────────────────────────────────────────────
-        
+
+        def _load_sound(*parts):
+            path = os.path.join(*parts)
+            if os.path.exists(path):
+                try:
+                    return pygame.mixer.Sound(path)
+                except pygame.error:
+                    return None
+            return None
+
         self.sounds = {
-            "background": pygame.mixer.Sound(os.path.join("assets", "sounds", "fast-typing_ambient.mp3")),
-            "chat": pygame.mixer.Sound(os.path.join("assets", "sounds", "comic_chat_ interactive.mp3")),
-            "question": pygame.mixer.Sound(os.path.join("assets", "sounds", "pregunta_sound.mp3")),
-            "game_over": pygame.mixer.Sound(os.path.join("assets", "sounds", "fail.mp3")),
+            "background": _load_sound("assets", "sounds", "ambient_typing", "fast-typing_ambient.mp3"),
+            "chat": _load_sound("assets", "sounds", "interact", "comic_chat_ interactive.mp3"),
+            "question": _load_sound("assets", "sounds", "pregunta_sound.mp3"),
+            "game_over": _load_sound("assets", "sounds", "fail_sound", "fail.mp3"),
         }
 
-        # Reproducir música de fondo en loop
-        self.sounds["background"].set_volume(0.5)  # volumen al 50%
-        self.sounds["background"].play(-1)
+        # Reproducir música de fondo en loop si existe
+        if self.sounds.get("background"):
+            self.sounds["background"].set_volume(0.5)  # volumen al 50%
+            self.sounds["background"].play(-1)
 
 
 
